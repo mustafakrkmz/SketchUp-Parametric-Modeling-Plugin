@@ -9,7 +9,7 @@
 // Translates.
 t = string => {
 
-    if ( PMGNodesEditorTranslation.hasOwnProperty(string) ) {
+    if (PMGNodesEditorTranslation.hasOwnProperty(string)) {
         return PMGNodesEditorTranslation[string]
     } else {
         return string
@@ -44,11 +44,11 @@ PMG.Utils.cloneObject = object => {
 
 PMG.Utils.isValidNumber = number => {
 
-    if ( typeof number === 'number' ) {
+    if (typeof number === 'number') {
         return true
     }
 
-    if ( typeof number === 'string' && /^-?(0|[1-9][0-9]*)(\.[0-9]+)?$/.test(number) ) {
+    if (typeof number === 'string' && /^-?(0|[1-9][0-9]*)(\.[0-9]+)?$/.test(number)) {
         return true
     }
 
@@ -65,7 +65,7 @@ PMG.NodesEditor.initializeControls = () => {
         props: ['emitter', 'ikey', 'getData', 'putData', 'placeholder', 'readonly'],
 
         template: '<input type="number" :placeholder="placeholder" :title="placeholder" :readonly="readonly" :value="value" @input="change($event)" @pointerdown.stop="" @pointermove.stop="" />',
-        
+
         data() {
 
             return {
@@ -78,7 +78,7 @@ PMG.NodesEditor.initializeControls = () => {
 
             change(event) {
 
-                if ( PMG.Utils.isValidNumber(event.target.value) ) {
+                if (PMG.Utils.isValidNumber(event.target.value)) {
 
                     this.value = parseFloat(event.target.value)
 
@@ -100,12 +100,12 @@ PMG.NodesEditor.initializeControls = () => {
 
         mounted() {
 
-            if ( PMG.Utils.isValidNumber(this.getData(this.ikey)) ) {
+            if (PMG.Utils.isValidNumber(this.getData(this.ikey))) {
                 this.value = this.getData(this.ikey)
             }
 
         }
-        
+
     }
 
     PMG.NodesEditor.controls['text'] = {
@@ -113,7 +113,7 @@ PMG.NodesEditor.initializeControls = () => {
         props: ['emitter', 'ikey', 'getData', 'putData', 'placeholder', 'title', 'readonly'],
 
         template: '<input type="text" spellcheck="false" :placeholder="placeholder" :title="title" :readonly="readonly" :value="value" @input="change($event)" @pointerdown.stop="" @pointermove.stop="" />',
-        
+
         data() {
 
             return {
@@ -135,7 +135,7 @@ PMG.NodesEditor.initializeControls = () => {
             update() {
 
                 this.putData(this.ikey, this.value)
-                
+
                 this.emitter.trigger('process')
 
             }
@@ -145,7 +145,7 @@ PMG.NodesEditor.initializeControls = () => {
         mounted() {
             this.value = this.getData(this.ikey)
         }
-        
+
     }
 
     PMG.NodesEditor.controls['textarea'] = {
@@ -153,7 +153,7 @@ PMG.NodesEditor.initializeControls = () => {
         props: ['emitter', 'ikey', 'getData', 'putData', 'placeholder'],
 
         template: '<textarea spellcheck="false" :placeholder="placeholder" @input="change($event)" @pointerdown.stop="" @pointermove.stop="">{{ value }}</textarea>',
-        
+
         data() {
 
             return {
@@ -175,7 +175,7 @@ PMG.NodesEditor.initializeControls = () => {
             update() {
 
                 this.putData(this.ikey, this.value)
-                
+
                 this.emitter.trigger('process')
 
             }
@@ -185,7 +185,7 @@ PMG.NodesEditor.initializeControls = () => {
         mounted() {
             this.value = this.getData(this.ikey)
         }
-        
+
     }
 
     PMG.NodesEditor.controls['checkbox'] = {
@@ -193,7 +193,7 @@ PMG.NodesEditor.initializeControls = () => {
         props: ['emitter', 'ikey', 'getData', 'putData', 'label'],
 
         template:
-        `<div class="checkbox-control">
+            `<div class="checkbox-control">
             <input type="checkbox" @change="change($event)" :checked="checked" />
             {{ label }}
         </div>`,
@@ -204,7 +204,7 @@ PMG.NodesEditor.initializeControls = () => {
                 checked: this.getData(this.ikey),
                 label: this.label
             }
-            
+
         },
 
         methods: {
@@ -220,7 +220,7 @@ PMG.NodesEditor.initializeControls = () => {
             update() {
 
                 this.putData(this.ikey, this.checked)
-                
+
                 this.emitter.trigger('process')
 
             }
@@ -230,7 +230,7 @@ PMG.NodesEditor.initializeControls = () => {
         mounted() {
             this.checked = this.getData(this.ikey)
         }
-        
+
     }
 
     PMG.NodesEditor.controls['material'] = {
@@ -238,7 +238,7 @@ PMG.NodesEditor.initializeControls = () => {
         props: ['emitter', 'ikey', 'getData', 'putData'],
 
         template:
-        `<select @change="change($event)">
+            `<select @change="change($event)">
             <option value="">${t('Material...')}</option>
             <option v-for="material in materials" v-bind:value="material.name" v-bind:selected="material.selected">
                 {{ material.display_name }}
@@ -252,7 +252,7 @@ PMG.NodesEditor.initializeControls = () => {
 
             nodeSelectableMaterials.forEach(nodeSelectableMaterial => {
 
-                if ( nodeSelectableMaterial.name == nodeSelectedMaterial ) {
+                if (nodeSelectableMaterial.name == nodeSelectedMaterial) {
                     nodeSelectableMaterial.selected = 'selected'
                 } else {
                     nodeSelectableMaterial.selected = ''
@@ -263,7 +263,7 @@ PMG.NodesEditor.initializeControls = () => {
             return {
                 materials: nodeSelectableMaterials
             }
-            
+
         },
 
         methods: {
@@ -279,7 +279,7 @@ PMG.NodesEditor.initializeControls = () => {
             update() {
 
                 this.putData(this.ikey, this.value)
-                
+
                 this.emitter.trigger('process')
 
             }
@@ -289,7 +289,7 @@ PMG.NodesEditor.initializeControls = () => {
         mounted() {
             this.value = this.getData(this.ikey)
         }
-        
+
     }
 
     PMG.NodesEditor.controls['layer'] = {
@@ -297,7 +297,7 @@ PMG.NodesEditor.initializeControls = () => {
         props: ['emitter', 'ikey', 'getData', 'putData'],
 
         template:
-        `<select @change="change($event)">
+            `<select @change="change($event)">
             <option value="">${t('Tag/Layer...')}</option>
             <option v-for="layer in layers" v-bind:value="layer.name" v-bind:selected="layer.selected">
                 {{ layer.display_name }}
@@ -311,7 +311,7 @@ PMG.NodesEditor.initializeControls = () => {
 
             nodeSelectableLayers.forEach(nodeSelectableLayer => {
 
-                if ( nodeSelectableLayer.name == nodeSelectedLayer ) {
+                if (nodeSelectableLayer.name == nodeSelectedLayer) {
                     nodeSelectableLayer.selected = 'selected'
                 } else {
                     nodeSelectableLayer.selected = ''
@@ -322,7 +322,7 @@ PMG.NodesEditor.initializeControls = () => {
             return {
                 layers: nodeSelectableLayers
             }
-            
+
         },
 
         methods: {
@@ -338,7 +338,7 @@ PMG.NodesEditor.initializeControls = () => {
             update() {
 
                 this.putData(this.ikey, this.value)
-                
+
                 this.emitter.trigger('process')
 
             }
@@ -348,7 +348,7 @@ PMG.NodesEditor.initializeControls = () => {
         mounted() {
             this.value = this.getData(this.ikey)
         }
-        
+
     }
 
 }
@@ -364,7 +364,7 @@ class NumberReteControl extends Rete.Control {
         this.props = { emitter, ikey, placeholder, readonly }
 
     }
-  
+
     setValue(value) {
         this.vueContext.value = value
     }
@@ -380,7 +380,7 @@ class TextReteControl extends Rete.Control {
         this.props = { emitter, ikey, placeholder, title, readonly }
 
     }
-  
+
     setValue(value) {
         this.vueContext.value = value
     }
@@ -396,7 +396,7 @@ class TextAreaReteControl extends Rete.Control {
         this.props = { emitter, ikey, placeholder }
 
     }
-  
+
     setValue(value) {
         this.vueContext.value = value
     }
@@ -412,7 +412,7 @@ class CheckBoxReteControl extends Rete.Control {
         this.props = { emitter, ikey, label }
 
     }
-  
+
     setValue(checked) {
         this.vueContext.checked = checked
     }
@@ -428,7 +428,7 @@ class MaterialReteControl extends Rete.Control {
         this.props = { emitter, ikey }
 
     }
-  
+
     setValue(value) {
         this.vueContext.value = value
     }
@@ -437,14 +437,14 @@ class MaterialReteControl extends Rete.Control {
 
 class LayerReteControl extends Rete.Control {
 
-    constructor(emitter, ikey ) {
+    constructor(emitter, ikey) {
 
         super(ikey)
         this.component = PMG.NodesEditor.controls.layer
         this.props = { emitter, ikey }
 
     }
-  
+
     setValue(value) {
         this.vueContext.value = value
     }
@@ -481,7 +481,7 @@ class DrawBoxReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -498,7 +498,7 @@ class DrawPrismReteComponent extends Rete.Component {
 
         var height = new Rete.Input('height', t('Height'), PMG.NodesEditor.sockets.number)
         height.addControl(new NumberReteControl(this.editor, 'height', t('Height')))
-        
+
         var sides = new Rete.Input('sides', t('Sides'), PMG.NodesEditor.sockets.number)
         sides.addControl(new NumberReteControl(this.editor, 'sides', t('Sides')))
 
@@ -515,7 +515,7 @@ class DrawPrismReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -549,7 +549,7 @@ class DrawCylinderReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -587,7 +587,7 @@ class DrawTubeReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -621,7 +621,7 @@ class DrawPyramidReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -655,7 +655,7 @@ class DrawConeReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -685,7 +685,7 @@ class DrawSphereReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -707,7 +707,7 @@ class DrawShapeReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -763,21 +763,21 @@ class AddReteComponent extends Rete.Component {
         var number1 = inputs['number1'].length ? inputs['number1'][0] : node.data.number1
         var number2 = inputs['number2'].length ? inputs['number2'][0] : node.data.number2
 
-        if ( PMG.Utils.isValidNumber(number1) ) {
+        if (PMG.Utils.isValidNumber(number1)) {
             number1 = parseFloat(number1)
         } else {
             number1 = 0
         }
 
-        if ( PMG.Utils.isValidNumber(number2) ) {
+        if (PMG.Utils.isValidNumber(number2)) {
             number2 = parseFloat(number2)
         } else {
             number2 = 0
         }
-        
+
         var sum = number1 + number2
         sum = Math.round((sum + Number.EPSILON) * 1000000) / 1000000
-        
+
         this.editor.nodes.find(n => n.id == node.id).controls.get('preview').setValue(sum)
         outputs['number'] = sum
 
@@ -814,21 +814,21 @@ class SubtractReteComponent extends Rete.Component {
         var number1 = inputs['number1'].length ? inputs['number1'][0] : node.data.number1
         var number2 = inputs['number2'].length ? inputs['number2'][0] : node.data.number2
 
-        if ( PMG.Utils.isValidNumber(number1) ) {
+        if (PMG.Utils.isValidNumber(number1)) {
             number1 = parseFloat(number1)
         } else {
             number1 = 0
         }
 
-        if ( PMG.Utils.isValidNumber(number2) ) {
+        if (PMG.Utils.isValidNumber(number2)) {
             number2 = parseFloat(number2)
         } else {
             number2 = 0
         }
-        
+
         var diff = number1 - number2
         diff = Math.round((diff + Number.EPSILON) * 1000000) / 1000000
-        
+
         this.editor.nodes.find(n => n.id == node.id).controls.get('preview').setValue(diff)
         outputs['number'] = diff
 
@@ -865,20 +865,20 @@ class MultiplyReteComponent extends Rete.Component {
         var number1 = inputs['number1'].length ? inputs['number1'][0] : node.data.number1
         var number2 = inputs['number2'].length ? inputs['number2'][0] : node.data.number2
 
-        if ( PMG.Utils.isValidNumber(number1) ) {
+        if (PMG.Utils.isValidNumber(number1)) {
             number1 = parseFloat(number1)
         } else {
             number1 = 0
         }
 
-        if ( PMG.Utils.isValidNumber(number2) ) {
+        if (PMG.Utils.isValidNumber(number2)) {
             number2 = parseFloat(number2)
         } else {
             number2 = 0
         }
-        
+
         var product = number1 * number2
-        
+
         this.editor.nodes.find(n => n.id == node.id).controls.get('preview').setValue(product)
         outputs['number'] = product
 
@@ -917,13 +917,13 @@ class DivideReteComponent extends Rete.Component {
         var dividend = inputs['dividend'].length ? inputs['dividend'][0] : node.data.dividend
         var divisor = inputs['divisor'].length ? inputs['divisor'][0] : node.data.divisor
 
-        if ( PMG.Utils.isValidNumber(dividend) ) {
+        if (PMG.Utils.isValidNumber(dividend)) {
             dividend = parseFloat(dividend)
         } else {
             dividend = 0
         }
 
-        if ( PMG.Utils.isValidNumber(divisor) ) {
+        if (PMG.Utils.isValidNumber(divisor)) {
             divisor = parseFloat(divisor)
         } else {
             divisor = 1
@@ -931,7 +931,7 @@ class DivideReteComponent extends Rete.Component {
 
         var quotient = dividend / divisor
         var remainder = dividend % divisor
-        
+
         this.editor.nodes.find(n => n.id == node.id).controls.get('preview').setValue(quotient)
         outputs['quotient'] = quotient
         outputs['remainder'] = remainder
@@ -941,7 +941,7 @@ class DivideReteComponent extends Rete.Component {
 }
 
 PMG.Utils.degrees2radians = angle => {
-    return angle * ( Math.PI / 180 )
+    return angle * (Math.PI / 180)
 }
 
 class CalculateReteComponent extends Rete.Component {
@@ -966,7 +966,7 @@ class CalculateReteComponent extends Rete.Component {
 
         var inputE = new Rete.Input('e', t('Variable E'), PMG.NodesEditor.sockets.number)
         inputE.addControl(new NumberReteControl(this.editor, 'e', t('Variable E')))
-        
+
         var inputF = new Rete.Input('f', t('Variable F'), PMG.NodesEditor.sockets.number)
         inputF.addControl(new NumberReteControl(this.editor, 'f', t('Variable F')))
 
@@ -1010,11 +1010,11 @@ class CalculateReteComponent extends Rete.Component {
 
     worker(node, inputs, outputs) {
 
-        if ( node.data.formula === undefined ) {
+        if (node.data.formula === undefined) {
 
             outputs['number'] = 0
             return
-            
+
         }
 
         var a = inputs['a'].length ? inputs['a'][0] : node.data.a
@@ -1103,7 +1103,7 @@ class PointReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1128,19 +1128,19 @@ class GetPointsReteComponent extends Rete.Component {
         var outputFrontTopRight = new Rete.Output('front_top_right', t('Front top right'), PMG.NodesEditor.sockets.point)
 
         var outputBottomCenter = new Rete.Output('bottom_center', t('Bottom center'), PMG.NodesEditor.sockets.point)
-        
+
         var outputLeftBottomCenter = new Rete.Output('left_bottom_center', t('Left bottom center'), PMG.NodesEditor.sockets.point)
         var outputLeftCenter = new Rete.Output('left_center', t('Left center'), PMG.NodesEditor.sockets.point)
         var outputLeftTopCenter = new Rete.Output('left_top_center', t('Left top center'), PMG.NodesEditor.sockets.point)
 
         var outputCenter = new Rete.Output('center', t('Center'), PMG.NodesEditor.sockets.point)
-        
+
         var outputRightBottomCenter = new Rete.Output('right_bottom_center', t('Right bottom center'), PMG.NodesEditor.sockets.point)
         var outputRightCenter = new Rete.Output('right_center', t('Right center'), PMG.NodesEditor.sockets.point)
         var outputRightTopCenter = new Rete.Output('right_top_center', t('Right top center'), PMG.NodesEditor.sockets.point)
 
         var outputTopCenter = new Rete.Output('top_center', t('Top center'), PMG.NodesEditor.sockets.point)
-        
+
         var outputBackBottomLeft = new Rete.Output('back_bottom_left', t('Back bottom left'), PMG.NodesEditor.sockets.point)
         var outputBackBottomCenter = new Rete.Output('back_bottom_center', t('Back bottom center'), PMG.NodesEditor.sockets.point)
         var outputBackBottomRight = new Rete.Output('back_bottom_right', t('Back bottom right'), PMG.NodesEditor.sockets.point)
@@ -1148,7 +1148,7 @@ class GetPointsReteComponent extends Rete.Component {
         var outputBackTopLeft = new Rete.Output('back_top_left', t('Back top left'), PMG.NodesEditor.sockets.point)
         var outputBackTopCenter = new Rete.Output('back_top_center', t('Back top center'), PMG.NodesEditor.sockets.point)
         var outputBackTopRight = new Rete.Output('back_top_right', t('Back top right'), PMG.NodesEditor.sockets.point)
-        
+
         return node
             .addInput(inputGroup)
             .addOutput(outputGroup)
@@ -1178,7 +1178,7 @@ class GetPointsReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1209,7 +1209,7 @@ class VectorReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1233,7 +1233,7 @@ class IntersectSolidsReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1257,7 +1257,7 @@ class UniteSolidsReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1281,7 +1281,7 @@ class SubtractSolidsReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1309,7 +1309,7 @@ class PushPullReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1338,7 +1338,7 @@ class MoveReteComponent extends Rete.Component {
 
         var inputE = new Rete.Input('e', t('Variable E'), PMG.NodesEditor.sockets.number)
         inputE.addControl(new NumberReteControl(this.editor, 'e', t('Variable E')))
-        
+
         var inputF = new Rete.Input('f', t('Variable F'), PMG.NodesEditor.sockets.number)
         inputF.addControl(new NumberReteControl(this.editor, 'f', t('Variable F')))
 
@@ -1361,7 +1361,7 @@ class MoveReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1387,7 +1387,7 @@ class AlignReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1416,7 +1416,7 @@ class RotateReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1449,7 +1449,7 @@ class ScaleReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1472,7 +1472,7 @@ class PaintReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1495,7 +1495,7 @@ class TagReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1514,7 +1514,7 @@ class EraseReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1542,7 +1542,7 @@ class CopyReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1586,7 +1586,7 @@ class ConcatenateReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1614,7 +1614,7 @@ class SelectReteComponent extends Rete.Component {
 
         var inputE = new Rete.Input('e', t('Variable E'), PMG.NodesEditor.sockets.number)
         inputE.addControl(new NumberReteControl(this.editor, 'e', t('Variable E')))
-        
+
         var inputF = new Rete.Input('f', t('Variable F'), PMG.NodesEditor.sockets.number)
         inputF.addControl(new NumberReteControl(this.editor, 'f', t('Variable F')))
 
@@ -1637,7 +1637,7 @@ class SelectReteComponent extends Rete.Component {
         inputL.addControl(new NumberReteControl(this.editor, 'l', t('Variable L')))
 
         var outputGroups = new Rete.Output('groups', t('Matching groups'), PMG.NodesEditor.sockets.groups)
-        
+
         var outputNotGroups = new Rete.Output('not_groups', t('Not matching groups'), PMG.NodesEditor.sockets.groups)
 
         return node
@@ -1660,7 +1660,7 @@ class SelectReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1707,7 +1707,7 @@ class MakeGroupReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
 
 }
 
@@ -1724,11 +1724,140 @@ class CommentReteComponent extends Rete.Component {
 
     }
 
-    worker(_node, _inputs, _outputs) {}
+    worker(_node, _inputs, _outputs) { }
+
+}
+
+class GroupReteComponent extends Rete.Component {
+
+    constructor() {
+        super('Group')
+    }
+
+    builder(node) {
+
+        node.data.width = node.data.width || 400
+        node.data.height = node.data.height || 300
+
+        return node
+            .addControl(new TextReteControl(this.editor, 'name', t('Name')))
+            .addControl(new NumberReteControl(this.editor, 'width', t('Width')))
+            .addControl(new NumberReteControl(this.editor, 'height', t('Height')))
+
+    }
+
+    worker(_node, _inputs, _outputs) { }
+
+}
+
+
+class HistoryManager {
+
+    constructor(editor) {
+
+        this.editor = editor
+        this.history = []
+        this.future = []
+        this.active = true
+        this.limit = 50
+
+        // Listeners
+        this.editor.on('nodecreated noderemoved connectioncreated connectionremoved', () => {
+            this.push()
+        })
+
+        // Dragging end listener
+        var container = this.editor.view.container
+        var wasDragging = false
+
+        this.editor.on('nodedragged', () => {
+            wasDragging = true
+        })
+
+        // Use capture to ensure we catch it
+        container.addEventListener('mouseup', () => {
+            if (wasDragging) {
+                wasDragging = false
+                this.push()
+            }
+        })
+
+        // Key listeners
+        window.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                this.undo()
+                e.preventDefault()
+                e.stopPropagation()
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+                this.redo()
+                e.preventDefault()
+                e.stopPropagation()
+            }
+        })
+
+    }
+
+    push() {
+
+        if (!this.active) return
+
+        var state = JSON.stringify(this.editor.toJSON())
+
+        if (this.history.length > 0) {
+            var lastState = this.history[this.history.length - 1]
+            if (state === lastState) return
+        }
+
+        this.history.push(state)
+
+        if (this.history.length > this.limit) this.history.shift()
+
+        this.future = []
+
+    }
+
+    undo() {
+
+        if (this.history.length <= 1) return
+
+        this.active = false
+
+        var current = this.history.pop()
+        this.future.push(current)
+
+        var prev = this.history[this.history.length - 1]
+
+        this.editor.fromJSON(JSON.parse(prev)).then(() => {
+            this.active = true
+            PMG.NodesEditor.exportModelSchema(true)
+        })
+
+    }
+
+    redo() {
+
+        if (this.future.length === 0) return
+
+        this.active = false
+
+        var next = this.future.pop()
+        this.history.push(next)
+
+        this.editor.fromJSON(JSON.parse(next)).then(() => {
+            this.active = true
+            PMG.NodesEditor.exportModelSchema(true)
+        })
+
+    }
 
 }
 
 PMG.codeName = 'ParametricModeling'
+
+PMG.NodesEditor.initializeHistory = () => {
+    PMG.NodesEditor.history = new HistoryManager(PMG.NodesEditor.editor)
+}
 
 PMG.NodesEditor.initializeEditor = () => {
 
@@ -1787,6 +1916,7 @@ PMG.NodesEditor.initializeComponents = () => {
         "Concatenate": new ConcatenateReteComponent(),
         "Select": new SelectReteComponent(),
         "Make group": new MakeGroupReteComponent(),
+        "Group": new GroupReteComponent(),
         "Comment": new CommentReteComponent()
 
     }
@@ -1807,7 +1937,7 @@ PMG.NodesEditor.registerComponents = () => {
 }
 
 PMG.NodesEditor.loadToolbarIcons = () => {
-    
+
     document.querySelectorAll('.toolbar .node-icon').forEach(toolbarNodeIcon => {
 
         toolbarNodeIcon.src = PMGNodesEditorIcons['nodes'][toolbarNodeIcon.dataset.nodeName]['path']
@@ -1820,7 +1950,7 @@ PMG.NodesEditor.loadToolbarIcons = () => {
     toolbarHelpIcon.src = PMGNodesEditorIcons['help']['path']
     toolbarHelpIcon.title = PMGNodesEditorIcons['help']['title']
 
-    if ( SketchUpVersion < 21 ) {
+    if (SketchUpVersion < 21) {
         new Drooltip({
             element: '.toolbar .node-icon, .toolbar .help-icon',
             position: 'bottom',
@@ -1834,27 +1964,27 @@ PMG.NodesEditor.loadToolbarIcons = () => {
 
 PMG.NodesEditor.adaptNumberInputStep = input => {
 
-    if ( input.value === '' ) {
+    if (input.value === '') {
 
         input.step = 1
         return
 
     }
 
-    if ( isNaN(parseFloat(input.step)) ) {
+    if (isNaN(parseFloat(input.step))) {
         input.step = 1
     }
 
-    if ( input.value.indexOf('.') !== -1 ) {
+    if (input.value.indexOf('.') !== -1) {
 
         var inputParts = input.value.split('.')
 
-        if ( inputParts.length === 2 ) {
+        if (inputParts.length === 2) {
 
             var inputDecimalPart = inputParts[1]
             var inputStepCandidate = 1 / parseFloat('1' + '0'.repeat(inputDecimalPart.length))
 
-            if ( inputStepCandidate < input.step ) {
+            if (inputStepCandidate < input.step) {
                 input.step = inputStepCandidate
             }
 
@@ -1868,7 +1998,7 @@ PMG.NodesEditor.schemaIsExportable = false
 
 PMG.NodesEditor.exportModelSchema = redraw => {
 
-    if ( PMG.NodesEditor.schemaIsExportable ) {
+    if (PMG.NodesEditor.schemaIsExportable) {
         sketchup.exportModelSchema(JSON.stringify(PMG.NodesEditor.editor.toJSON()), redraw)
     }
 
@@ -1876,7 +2006,7 @@ PMG.NodesEditor.exportModelSchema = redraw => {
 
 PMG.NodesEditor.addNode = (nodeName, nodeData) => {
 
-    nodeData = ( nodeData === undefined ) ? {} : nodeData
+    nodeData = (nodeData === undefined) ? {} : nodeData
 
     var component = PMG.NodesEditor.components[nodeName]
     var mouse = PMG.NodesEditor.editor.view.area.mouse
@@ -1887,7 +2017,7 @@ PMG.NodesEditor.addNode = (nodeName, nodeData) => {
         PMG.NodesEditor.editor.addNode(node)
 
         PMG.NodesEditor.nodeBeingAdded = node
-        
+
     })
 
 }
@@ -1896,21 +2026,146 @@ PMG.NodesEditor.resizeEditorView = () => {
     document.querySelector('#pmg-nodes-editor').style.height = window.innerHeight + 'px'
 }
 
+PMG.NodesEditor.createColorPicker = (callback) => {
+    const colors = [
+        '#ff4444', '#ff8800', '#ffcc00', '#99cc00', '#33b5e5',
+        '#0099cc', '#aa66cc', '#9933cc', '#669900', '#cc0000',
+        '#ffbb33', '#FF00FF', '#795548', '#607D8B', '#000000'
+    ]
+
+    const overlay = document.createElement('div')
+    overlay.className = 'picker-overlay'
+
+    const modal = document.createElement('div')
+    modal.className = 'picker-modal'
+    modal.innerHTML = `<h3>${t('Select Color')}</h3><div class="picker-grid"></div>`
+
+    const grid = modal.querySelector('.picker-grid')
+
+    colors.forEach(color => {
+        const option = document.createElement('div')
+        option.className = 'color-option'
+        option.style.backgroundColor = color
+        option.onclick = () => {
+            callback(color)
+            document.body.removeChild(overlay)
+        }
+        grid.appendChild(option)
+    })
+
+    const closeBtn = document.createElement('button')
+    closeBtn.className = 'picker-close'
+    closeBtn.innerText = t('Close')
+    closeBtn.onclick = () => document.body.removeChild(overlay)
+
+    modal.appendChild(closeBtn)
+    overlay.appendChild(modal)
+    document.body.appendChild(overlay)
+}
+
+PMG.NodesEditor.createIconPicker = (callback) => {
+    const icons = [
+        '⭐', '🚀', '🔥', '💡', '✅',
+        '❌', '⚠️', '⚙️', '💎', '❤️',
+        '📦', '🛠️', '🧱', '📏', '✏️'
+    ]
+
+    const overlay = document.createElement('div')
+    overlay.className = 'picker-overlay'
+
+    const modal = document.createElement('div')
+    modal.className = 'picker-modal'
+    modal.innerHTML = `<h3>${t('Select Icon')}</h3><div class="picker-grid"></div>`
+
+    const grid = modal.querySelector('.picker-grid')
+
+    icons.forEach(icon => {
+        const option = document.createElement('div')
+        option.className = 'icon-option'
+        option.innerText = icon
+        option.onclick = () => {
+            callback(icon)
+            document.body.removeChild(overlay)
+        }
+        grid.appendChild(option)
+    })
+
+    const closeBtn = document.createElement('button')
+    closeBtn.className = 'picker-close'
+    closeBtn.innerText = t('Close')
+    closeBtn.onclick = () => document.body.removeChild(overlay)
+
+    modal.appendChild(closeBtn)
+    overlay.appendChild(modal)
+    document.body.appendChild(overlay)
+}
+
 PMG.NodesEditor.addEventListeners = () => {
 
     PMG.NodesEditor.editor.on('process nodecreated noderemoved connectioncreated connectionremoved', () => {
-        
+
         PMG.NodesEditor.engine.abort().then(() => {
             PMG.NodesEditor.engine.process(PMG.NodesEditor.editor.toJSON())
         })
-        
+
+    })
+
+    PMG.NodesEditor.updateLockedNodes = () => {
+        PMG.NodesEditor.editor.nodes.forEach(node => {
+            const nodeElement = node.vueContext.$el
+            const isLocked = node.data.locked === true
+
+            if (isLocked) {
+                nodeElement.classList.add('locked')
+                nodeElement.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.disabled = true
+                    el.title = "Locked"
+                })
+            } else {
+                nodeElement.classList.remove('locked')
+                nodeElement.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.disabled = false
+                    el.title = ""
+                })
+            }
+        })
+    }
+
+    // Call updateLockedNodes on process to ensure persistence
+    PMG.NodesEditor.editor.on('process', () => {
+        PMG.NodesEditor.updateLockedNodes()
     })
 
     PMG.NodesEditor.editor.on('nodecreated noderemoved connectioncreated connectionremoved', () => {
+        // Also update here
+        setTimeout(() => { PMG.NodesEditor.updateLockedNodes() }, 10)
         PMG.NodesEditor.exportModelSchema(true)
     })
 
+    // Prevent connections involving locked nodes
+    PMG.NodesEditor.editor.on('connectioncreate', connection => {
+        if (connection.input.node.data.locked || connection.output.node.data.locked) {
+            return false
+        }
+    })
+
+    PMG.NodesEditor.editor.on('connectionremove', connection => {
+        if (connection.input.node.data.locked || connection.output.node.data.locked) {
+        }
+    })
+
+    PMG.NodesEditor.editor.on('rendernode', ({ el, node }) => {
+        if (node.data.locked) {
+            el.classList.add('locked')
+            el.querySelectorAll('input, select, textarea').forEach(element => {
+                element.disabled = true
+                element.title = "Locked"
+            })
+        }
+    })
+
     PMG.NodesEditor.editor.on('nodedragged', () => {
+        PMG.NodesEditor.updateLockedNodes()
         PMG.NodesEditor.exportModelSchema(false)
     })
 
@@ -1920,14 +2175,91 @@ PMG.NodesEditor.addEventListeners = () => {
 
         nodeElement.setAttribute('data-node-id', node.id)
 
-        new ContextMenu('.node[data-node-id="' + node.id + '"] *', [
-            {
+        var contextMenuItems = []
+
+        if (!node.data.locked) {
+            contextMenuItems.push({
                 name: t('Remove this node'),
                 fn: () => { PMG.NodesEditor.editor.removeNode(node) }
-            }
-        ])
+            })
+        }
 
-        if ( SketchUpVersion < 21 ) {
+        contextMenuItems.push({
+            name: node.data.locked ? t('Unlock node') : t('Lock node'),
+            fn: () => {
+                node.data.locked = !node.data.locked
+
+                // Trigger visual update
+                PMG.NodesEditor.updateLockedNodes()
+
+                // Re-create context menu to update options
+                PMG.NodesEditor.editor.trigger('nodecreated', node)
+                PMG.NodesEditor.exportModelSchema(true)
+            }
+        })
+
+        if (!node.data.locked) {
+            contextMenuItems.push(
+                {
+                    name: t('Set color'),
+                    fn: () => {
+                        PMG.NodesEditor.createColorPicker(color => {
+                            node.data.customColor = color
+                            PMG.NodesEditor.editor.trigger('nodecreated', node)
+                            PMG.NodesEditor.exportModelSchema(true)
+                        })
+                    }
+                },
+                {
+                    name: t('Set icon'),
+                    fn: () => {
+                        PMG.NodesEditor.createIconPicker(icon => {
+                            node.data.customIcon = icon
+                            PMG.NodesEditor.editor.trigger('nodecreated', node)
+                            PMG.NodesEditor.exportModelSchema(true)
+                        })
+                    }
+                }
+            )
+        }
+
+        if (node.contextMenuInstance) {
+            node.contextMenuInstance.destroy()
+        }
+
+        node.contextMenuInstance = new ContextMenu('.node[data-node-id="' + node.id + '"] *', contextMenuItems)
+
+
+        if (node.data.locked) {
+            nodeElement.classList.add('locked')
+        }
+
+        // Intercept translate to prevent movement if locked
+        if (!node.vueContext._originalTranslate) {
+            node.vueContext._originalTranslate = node.translate
+            // We need to override the view's translate, but Rete's node.translate updates data/view.
+            // Actually Rete Node does not have translate, the NodeView has.
+            // We can accces NodeView via editor.view.nodes.get(node)
+            // But here 'node' is the data model. 'node.vueContext' is the Vue component.
+            // It's safer to check lock in 'nodedragged' or override the view's method globally or per instance.
+        }
+
+        // We will handle the locking mechanism by overriding the view's translate method immediately
+        setTimeout(() => {
+            const nodeView = PMG.NodesEditor.editor.view.nodes.get(node)
+            if (nodeView && !nodeView._originalTranslate) {
+                nodeView._originalTranslate = nodeView.translate
+                nodeView.translate = function (x, y) {
+                    if (node.data.locked) {
+                        return // Do nothing
+                    }
+                    // Call original
+                    nodeView._originalTranslate.call(nodeView, x, y)
+                }
+            }
+        }, 10)
+
+        if (SketchUpVersion < 21) {
             new Drooltip({
                 element: '.node[data-node-id="' + node.id + '"] .socket',
                 position: 'bottom',
@@ -1961,12 +2293,12 @@ PMG.NodesEditor.addEventListeners = () => {
 
             nodeTextAreaElement.addEventListener('input', _event => {
 
-                if ( node.name === 'Comment' ) {
+                if (node.name === 'Comment') {
                     PMG.NodesEditor.exportModelSchema(false)
                 } else {
                     PMG.NodesEditor.exportModelSchema(true)
                 }
-                
+
             })
 
         })
@@ -1991,17 +2323,97 @@ PMG.NodesEditor.addEventListeners = () => {
 
         nodeTitleElement.innerHTML = t(node.name)
 
-        var nodeTitleGradient = 'linear-gradient(0deg,hsla(0,0%,100%,.05) 0,hsla(0,0%,100%,.05)' +
-            ' 40%,hsla(0,0%,100%,.19)),radial-gradient(70% 40px at center,' +
-            PMGNodesEditorIcons['nodes'][node.name]['color'] + ' 0,rgba(0,0,0,0) 60%)'
+        if (node.data.customColor) {
+            nodeTitleElement.style.background = node.data.customColor
+        } else {
+            var nodeTitleGradient = 'linear-gradient(0deg,hsla(0,0%,100%,.05) 0,hsla(0,0%,100%,.05)' +
+                ' 40%,hsla(0,0%,100%,.19)),radial-gradient(70% 40px at center,' +
+                PMGNodesEditorIcons['nodes'][node.name]['color'] + ' 0,rgba(0,0,0,0) 60%)'
 
-        nodeTitleElement.style.backgroundImage = nodeTitleGradient
+            nodeTitleElement.style.backgroundImage = nodeTitleGradient
+        }
 
-        var nodeTitleIconElement = document.createElement('img')
+        if (node.data.customIcon) {
+            var iconSpan = document.createElement('span')
+            iconSpan.className = 'icon'
+            iconSpan.textContent = node.data.customIcon
+            iconSpan.style.fontSize = '20px'
+            iconSpan.style.textAlign = 'center'
+            nodeTitleElement.appendChild(iconSpan)
+        } else {
+            var nodeTitleIconElement = document.createElement('img')
 
-        nodeTitleIconElement.src = PMGNodesEditorIcons['nodes'][node.name]['path']
-        nodeTitleIconElement.className = 'icon'
-        nodeTitleElement.appendChild(nodeTitleIconElement)
+            if (PMGNodesEditorIcons['nodes'][node.name]) {
+                nodeTitleIconElement.src = PMGNodesEditorIcons['nodes'][node.name]['path']
+            }
+
+            nodeTitleIconElement.className = 'icon'
+            nodeTitleElement.appendChild(nodeTitleIconElement)
+        }
+
+        if (node.name === 'Group') {
+            nodeElement.classList.add('group')
+
+            const updateSize = () => {
+                nodeElement.style.width = node.data.width + 'px'
+                nodeElement.style.height = node.data.height + 'px'
+                // Also update content height if needed, but node height should suffice
+            }
+            // Initial size
+            updateSize()
+
+            // Listen to inputs
+            nodeElement.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', () => {
+                    node.data.width = parseInt(node.data.width) || 400
+                    node.data.height = parseInt(node.data.height) || 300
+                    updateSize()
+                })
+            })
+
+            // Override translate for group moving logic
+            setTimeout(() => {
+                const nodeView = PMG.NodesEditor.editor.view.nodes.get(node)
+                if (nodeView && !nodeView._originalTranslate) {
+                    nodeView._originalTranslate = nodeView.translate
+                    nodeView.translate = function (x, y) {
+                        const dx = x - node.position[0]
+                        const dy = y - node.position[1]
+
+                        // Check valid move
+                        if (node.data.locked) return
+
+                        nodeView._originalTranslate.call(nodeView, x, y)
+
+                        if (dx === 0 && dy === 0) return
+
+                        // Move children
+                        const groupRect = {
+                            x: x, y: y,
+                            w: node.data.width, h: node.data.height
+                        }
+
+                        PMG.NodesEditor.editor.nodes.forEach(otherNode => {
+                            if (otherNode.id === node.id) return
+                            // Check if otherNode is inside group
+                            // We use center of node or top-left? Rete uses top-left.
+                            // Let's us center for better UX? Or simple containment.
+                            // For now simple containment of Top-Left corner.
+                            if (otherNode.position[0] >= groupRect.x &&
+                                otherNode.position[0] <= groupRect.x + groupRect.w &&
+                                otherNode.position[1] >= groupRect.y &&
+                                otherNode.position[1] <= groupRect.y + groupRect.h) {
+
+                                const otherView = PMG.NodesEditor.editor.view.nodes.get(otherNode)
+                                if (otherView) {
+                                    otherView.translate(otherNode.position[0] + dx, otherNode.position[1] + dy)
+                                }
+                            }
+                        })
+                    }
+                }
+            }, 10)
+        }
 
     })
 
@@ -2011,7 +2423,7 @@ PMG.NodesEditor.addEventListeners = () => {
 
     PMG.NodesEditor.editor.on('mousemove', () => {
 
-        if ( PMG.NodesEditor.nodeBeingAdded === undefined ) {
+        if (PMG.NodesEditor.nodeBeingAdded === undefined) {
             return
         }
 
@@ -2025,14 +2437,14 @@ PMG.NodesEditor.addEventListeners = () => {
 
     window.addEventListener('click', event => {
 
-        if ( event.target.classList.contains('node-icon') ) {
+        if (event.target.classList.contains('node-icon')) {
             return
         }
 
         PMG.NodesEditor.nodeBeingAdded = undefined
 
-        if ( event.target.classList.contains('main-path') ) {
-            
+        if (event.target.classList.contains('main-path')) {
+
             document.querySelectorAll('.main-path.selected').forEach(connectionPath => {
                 connectionPath.classList.remove('selected')
             })
@@ -2072,7 +2484,7 @@ PMG.NodesEditor.importModelSchema = () => {
             })
 
         })
-        
+
     })
 
 }
@@ -2110,6 +2522,10 @@ PMG.NodesEditor.setGlobalContextMenu = () => {
             fn: () => { PMG.NodesEditor.addNode('Comment') }
         },
         {
+            name: t('Add a group node'),
+            fn: () => { PMG.NodesEditor.addNode('Group') }
+        },
+        {
             name: t('Remove all nodes'),
             fn: () => { PMG.NodesEditor.editor.clear() }
         }
@@ -2145,5 +2561,6 @@ document.addEventListener('DOMContentLoaded', _event => {
     PMG.NodesEditor.importModelSchema()
     PMG.NodesEditor.setGlobalContextMenu()
     PMG.NodesEditor.resizeEditorView()
+    PMG.NodesEditor.initializeHistory()
 
 })
