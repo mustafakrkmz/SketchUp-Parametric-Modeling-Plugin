@@ -1,0 +1,9 @@
+# Ignore everything
+*
+
+# Whitelist directories
+!docs/
+!source/
+
+# Whitelist .gitignore itself
+!.gitignore
