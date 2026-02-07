@@ -2478,6 +2478,48 @@ PMG.NodesEditor.addEventListeners = () => {
         PMG.NodesEditor.resizeEditorView()
     })
 
+    // Delete selected nodes with Delete or Backspace key
+    window.addEventListener('keydown', async (e) => {
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+            // Check if user is typing in an input field
+            const tag = document.activeElement.tagName.toUpperCase();
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+                return;
+            }
+
+            const selectedNodes = PMG.NodesEditor.editor.selected.list;
+            if (selectedNodes.length > 0) {
+                // Determine if we should prevent default behavior (e.g. Backspace navigation)
+                e.preventDefault();
+
+                // Clone the array because removeNode modifies the selection list
+                const nodesToRemove = [...selectedNodes];
+
+                // Process deletions sequentially to avoid race conditions causing ghost nodes or failures
+                for (const node of nodesToRemove) {
+                    if (!node.data.locked) {
+                        try {
+                            await PMG.NodesEditor.editor.removeNode(node);
+                        } catch (err) {
+                            console.error("Error removing node:", err);
+                        }
+                    }
+                }
+
+                // Clear selection explicitly
+                PMG.NodesEditor.editor.selected.clear();
+
+                // Force update to remove ghost nodes
+                setTimeout(() => {
+                    if (PMG.NodesEditor.editor.view && PMG.NodesEditor.editor.view.area) {
+                        PMG.NodesEditor.editor.view.area.update();
+                    }
+                    PMG.NodesEditor.editor.trigger('process');
+                }, 50);
+            }
+        }
+    });
+
 }
 
 PMG.NodesEditor.importModelSchema = () => {
