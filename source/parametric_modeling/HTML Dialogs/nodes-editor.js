@@ -2745,8 +2745,36 @@ PMG.NodesEditor.Navigator = {
                 foundAny = true
                 var li = document.createElement('li')
                 li.className = 'navigator-item'
-                li.textContent = name
                 li.dataset.nodeId = node.id
+
+                // -- Icon --
+                var iconSpan = document.createElement('span')
+                iconSpan.className = 'navigator-icon'
+
+                if (node.data.customIcon) {
+                    iconSpan.textContent = node.data.customIcon
+                } else if (typeof PMGNodesEditorIcons !== 'undefined' && PMGNodesEditorIcons['nodes'][node.name]) {
+                    var img = document.createElement('img')
+                    img.src = PMGNodesEditorIcons['nodes'][node.name]['path']
+                    iconSpan.appendChild(img)
+                }
+                li.appendChild(iconSpan)
+
+                // -- Name --
+                var nameSpan = document.createElement('span')
+                nameSpan.textContent = name
+                nameSpan.style.overflow = 'hidden'
+                nameSpan.style.textOverflow = 'ellipsis'
+                nameSpan.style.whiteSpace = 'nowrap'
+                li.appendChild(nameSpan)
+
+                // -- Lock --
+                if (node.data.locked) {
+                    var lockSpan = document.createElement('span')
+                    lockSpan.className = 'navigator-lock'
+                    lockSpan.textContent = '🔒'
+                    li.appendChild(lockSpan)
+                }
 
                 // Set color indicator
                 var color = node.data.customColor
@@ -2758,6 +2786,7 @@ PMG.NodesEditor.Navigator = {
                     li.style.borderLeftColor = color
                 }
 
+                // Selection state
                 if (PMG.NodesEditor.editor.selected.contains(node)) {
                     li.classList.add('selected')
                 }
