@@ -2641,18 +2641,25 @@ PMG.NodesEditor.Navigator = {
 
     createIcon: function () {
         var toolbar = document.querySelector('.toolbar')
+        if (!toolbar) return
+
+        var group = document.createElement('div')
+        group.className = 'toolbar-group'
+
         var icon = document.createElement('div')
-        icon.className = 'search-icon'
+        icon.className = 'group-header'
         icon.innerHTML = '🔍'
-        icon.style.fontSize = '20px'
-        icon.style.lineHeight = '30px'
-        icon.style.textAlign = 'center'
-        icon.style.color = 'white'
         icon.title = t('Navigator')
+
+        // Match icon size/style
+        icon.style.width = '30px'
+        icon.style.padding = '0'
+        icon.style.fontSize = '16px'
 
         icon.onclick = () => this.toggle()
 
-        toolbar.appendChild(icon)
+        group.appendChild(icon)
+        toolbar.appendChild(group)
     },
 
     createPanel: function () {
@@ -2733,12 +2740,12 @@ PMG.NodesEditor.Navigator = {
 
         // Sort nodes by sortIndex then name
         var sortedNodes = [...nodes].sort((a, b) => {
-             if (typeof a.data.sortIndex !== 'undefined' && typeof b.data.sortIndex !== 'undefined') {
+            if (typeof a.data.sortIndex !== 'undefined' && typeof b.data.sortIndex !== 'undefined') {
                 return a.data.sortIndex - b.data.sortIndex
             }
             if (typeof a.data.sortIndex !== 'undefined') return -1
             if (typeof b.data.sortIndex !== 'undefined') return 1
-            
+
             var nameA = a.data.customName || t(a.name)
             var nameB = b.data.customName || t(b.name)
             return nameA.localeCompare(nameB)
@@ -2752,10 +2759,10 @@ PMG.NodesEditor.Navigator = {
                 var li = document.createElement('li')
                 li.className = 'navigator-item'
                 li.dataset.nodeId = node.id
-                
+
                 // Drag and Drop attributes
                 li.draggable = true
-                
+
                 // Event Listeners for DnD
                 li.addEventListener('dragstart', (e) => this.handleDragStart(e, node))
                 li.addEventListener('dragover', (e) => this.handleDragOver(e))
@@ -2766,7 +2773,7 @@ PMG.NodesEditor.Navigator = {
                 // -- Icon --
                 var iconSpan = document.createElement('span')
                 iconSpan.className = 'navigator-icon'
-                
+
                 if (node.data.customIcon) {
                     iconSpan.textContent = node.data.customIcon
                 } else if (typeof PMGNodesEditorIcons !== 'undefined' && PMGNodesEditorIcons['nodes'][node.name]) {
@@ -2802,7 +2809,7 @@ PMG.NodesEditor.Navigator = {
                 if (color) {
                     li.style.borderLeftColor = color
                 }
-                
+
                 // Selection state
                 if (PMG.NodesEditor.editor.selected.contains(node)) {
                     li.classList.add('selected')
@@ -2820,13 +2827,13 @@ PMG.NodesEditor.Navigator = {
 
     // --- Drag and Drop Handlers ---
 
-    handleDragStart: function(e, node) {
+    handleDragStart: function (e, node) {
         e.dataTransfer.effectAllowed = 'move'
         e.dataTransfer.setData('text/plain', node.id)
         e.target.classList.add('dragging')
     },
 
-    handleDragOver: function(e) {
+    handleDragOver: function (e) {
         if (e.preventDefault) {
             e.preventDefault()
         }
@@ -2834,19 +2841,19 @@ PMG.NodesEditor.Navigator = {
         return false
     },
 
-    handleDragEnter: function(e) {
+    handleDragEnter: function (e) {
         e.currentTarget.classList.add('drag-over')
     },
 
-    handleDragLeave: function(e) {
+    handleDragLeave: function (e) {
         e.currentTarget.classList.remove('drag-over')
     },
 
-    handleDrop: function(e, targetNode) {
+    handleDrop: function (e, targetNode) {
         if (e.stopPropagation) {
             e.stopPropagation()
         }
-        
+
         // Remove visual cues
         var list = this.panel.querySelector('.navigator-list')
         list.querySelectorAll('.navigator-item').forEach(el => {
@@ -2865,38 +2872,38 @@ PMG.NodesEditor.Navigator = {
         // Determine new order based on current sorted list
         var nodes = PMG.NodesEditor.editor.nodes
         var sortedNodes = [...nodes].sort((a, b) => {
-             if (typeof a.data.sortIndex !== 'undefined' && typeof b.data.sortIndex !== 'undefined') {
+            if (typeof a.data.sortIndex !== 'undefined' && typeof b.data.sortIndex !== 'undefined') {
                 return a.data.sortIndex - b.data.sortIndex
             }
             if (typeof a.data.sortIndex !== 'undefined') return -1
             if (typeof b.data.sortIndex !== 'undefined') return 1
-            
+
             var nameA = a.data.customName || t(a.name)
             var nameB = b.data.customName || t(b.name)
             return nameA.localeCompare(nameB)
         })
-        
+
         var draggedIndex = sortedNodes.indexOf(draggedNode)
         var targetIndex = sortedNodes.indexOf(targetNode)
-        
+
         if (draggedIndex < 0 || targetIndex < 0) return false
-        
+
         // Remove and Re-insert
         sortedNodes.splice(draggedIndex, 1)
         targetIndex = sortedNodes.indexOf(targetNode) // Re-calculate after removal
         sortedNodes.splice(targetIndex, 0, draggedNode)
-        
+
         // Re-assign sortIndex to ALL nodes
         sortedNodes.forEach((node, index) => {
             node.data.sortIndex = index
         })
-        
+
         // Save changes
         PMG.NodesEditor.exportModelSchema(true)
-        
+
         // Refresh list
         this.updateList()
-        
+
         return false
     },
 
