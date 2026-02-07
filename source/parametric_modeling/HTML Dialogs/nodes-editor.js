@@ -2731,8 +2731,14 @@ PMG.NodesEditor.Navigator = {
             return
         }
 
-        // Sort nodes by name
+        // Sort nodes by sortIndex then name
         var sortedNodes = [...nodes].sort((a, b) => {
+             if (typeof a.data.sortIndex !== 'undefined' && typeof b.data.sortIndex !== 'undefined') {
+                return a.data.sortIndex - b.data.sortIndex
+            }
+            if (typeof a.data.sortIndex !== 'undefined') return -1
+            if (typeof b.data.sortIndex !== 'undefined') return 1
+            
             var nameA = a.data.customName || t(a.name)
             var nameB = b.data.customName || t(b.name)
             return nameA.localeCompare(nameB)
@@ -2746,11 +2752,21 @@ PMG.NodesEditor.Navigator = {
                 var li = document.createElement('li')
                 li.className = 'navigator-item'
                 li.dataset.nodeId = node.id
+                
+                // Drag and Drop attributes
+                li.draggable = true
+                
+                // Event Listeners for DnD
+                li.addEventListener('dragstart', (e) => this.handleDragStart(e, node))
+                li.addEventListener('dragover', (e) => this.handleDragOver(e))
+                li.addEventListener('drop', (e) => this.handleDrop(e, node))
+                li.addEventListener('dragenter', (e) => this.handleDragEnter(e))
+                li.addEventListener('dragleave', (e) => this.handleDragLeave(e))
 
                 // -- Icon --
                 var iconSpan = document.createElement('span')
                 iconSpan.className = 'navigator-icon'
-
+                
                 if (node.data.customIcon) {
                     iconSpan.textContent = node.data.customIcon
                 } else if (typeof PMGNodesEditorIcons !== 'undefined' && PMGNodesEditorIcons['nodes'][node.name]) {
@@ -2766,6 +2782,7 @@ PMG.NodesEditor.Navigator = {
                 nameSpan.style.overflow = 'hidden'
                 nameSpan.style.textOverflow = 'ellipsis'
                 nameSpan.style.whiteSpace = 'nowrap'
+                nameSpan.style.pointerEvents = 'none'
                 li.appendChild(nameSpan)
 
                 // -- Lock --
@@ -2785,7 +2802,7 @@ PMG.NodesEditor.Navigator = {
                 if (color) {
                     li.style.borderLeftColor = color
                 }
-
+                
                 // Selection state
                 if (PMG.NodesEditor.editor.selected.contains(node)) {
                     li.classList.add('selected')
@@ -2799,6 +2816,88 @@ PMG.NodesEditor.Navigator = {
         if (!foundAny) {
             list.innerHTML = `<li style="padding:10px; color:#aaa; text-align:center">${t('No nodes found')}</li>`
         }
+    },
+
+    // --- Drag and Drop Handlers ---
+
+    handleDragStart: function(e, node) {
+        e.dataTransfer.effectAllowed = 'move'
+        e.dataTransfer.setData('text/plain', node.id)
+        e.target.classList.add('dragging')
+    },
+
+    handleDragOver: function(e) {
+        if (e.preventDefault) {
+            e.preventDefault()
+        }
+        e.dataTransfer.dropEffect = 'move'
+        return false
+    },
+
+    handleDragEnter: function(e) {
+        e.currentTarget.classList.add('drag-over')
+    },
+
+    handleDragLeave: function(e) {
+        e.currentTarget.classList.remove('drag-over')
+    },
+
+    handleDrop: function(e, targetNode) {
+        if (e.stopPropagation) {
+            e.stopPropagation()
+        }
+        
+        // Remove visual cues
+        var list = this.panel.querySelector('.navigator-list')
+        list.querySelectorAll('.navigator-item').forEach(el => {
+            el.classList.remove('drag-over')
+            el.classList.remove('dragging')
+        })
+
+        var draggedNodeId = e.dataTransfer.getData('text/plain')
+        if (draggedNodeId == targetNode.id) {
+            return false
+        }
+
+        var draggedNode = PMG.NodesEditor.editor.nodes.find(n => n.id == draggedNodeId)
+        if (!draggedNode) return false
+
+        // Determine new order based on current sorted list
+        var nodes = PMG.NodesEditor.editor.nodes
+        var sortedNodes = [...nodes].sort((a, b) => {
+             if (typeof a.data.sortIndex !== 'undefined' && typeof b.data.sortIndex !== 'undefined') {
+                return a.data.sortIndex - b.data.sortIndex
+            }
+            if (typeof a.data.sortIndex !== 'undefined') return -1
+            if (typeof b.data.sortIndex !== 'undefined') return 1
+            
+            var nameA = a.data.customName || t(a.name)
+            var nameB = b.data.customName || t(b.name)
+            return nameA.localeCompare(nameB)
+        })
+        
+        var draggedIndex = sortedNodes.indexOf(draggedNode)
+        var targetIndex = sortedNodes.indexOf(targetNode)
+        
+        if (draggedIndex < 0 || targetIndex < 0) return false
+        
+        // Remove and Re-insert
+        sortedNodes.splice(draggedIndex, 1)
+        targetIndex = sortedNodes.indexOf(targetNode) // Re-calculate after removal
+        sortedNodes.splice(targetIndex, 0, draggedNode)
+        
+        // Re-assign sortIndex to ALL nodes
+        sortedNodes.forEach((node, index) => {
+            node.data.sortIndex = index
+        })
+        
+        // Save changes
+        PMG.NodesEditor.exportModelSchema(true)
+        
+        // Refresh list
+        this.updateList()
+        
+        return false
     },
 
     highlightSelected: function () {

@@ -590,3 +590,16 @@ body {
     padding-left: 5px;
     font-size: 14px;
 }
+
+/* Drag and Drop Styles */
+.navigator-item.dragging {
+    opacity: 0.5;
+    background: #e0e0e0;
+}
+
+.navigator-item.drag-over {
+    border-top: 2px solid #007bff;
+    /* Blue line indicating drop position */
+    padding-top: 6px;
+    /* Adjust padding to prevent jump */
+}
