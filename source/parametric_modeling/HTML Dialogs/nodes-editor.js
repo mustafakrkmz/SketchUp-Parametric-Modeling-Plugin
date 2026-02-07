@@ -2685,6 +2685,16 @@ PMG.NodesEditor.Navigator = {
                 li.textContent = name
                 li.dataset.nodeId = node.id
 
+                // Set color indicator
+                var color = node.data.customColor
+                if (!color && typeof PMGNodesEditorIcons !== 'undefined' && PMGNodesEditorIcons['nodes'][node.name]) {
+                    color = PMGNodesEditorIcons['nodes'][node.name]['color']
+                }
+
+                if (color) {
+                    li.style.borderLeftColor = color
+                }
+
                 if (PMG.NodesEditor.editor.selected.contains(node)) {
                     li.classList.add('selected')
                 }
