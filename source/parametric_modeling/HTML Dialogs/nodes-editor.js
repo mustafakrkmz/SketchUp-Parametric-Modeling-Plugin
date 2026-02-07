@@ -2629,10 +2629,31 @@ PMG.NodesEditor.Navigator = {
                 <input type="text" placeholder="${t('Search nodes...')}">
             </div>
             <ul class="navigator-list"></ul>
+            <div class="navigator-resizer"></div>
         `
 
         div.querySelector('.navigator-close').onclick = () => this.close()
         div.querySelector('input').oninput = (e) => this.filterList(e.target.value)
+
+        // Resizer Logic
+        const resizer = div.querySelector('.navigator-resizer')
+        resizer.onmousedown = (e) => {
+            e.preventDefault()
+            const startY = e.clientY
+            const startHeight = div.clientHeight
+
+            const doDrag = (e) => {
+                div.style.height = (startHeight + e.clientY - startY) + 'px'
+            }
+
+            const stopDrag = () => {
+                document.removeEventListener('mousemove', doDrag)
+                document.removeEventListener('mouseup', stopDrag)
+            }
+
+            document.addEventListener('mousemove', doDrag)
+            document.addEventListener('mouseup', stopDrag)
+        }
 
         document.body.appendChild(div)
         this.panel = div

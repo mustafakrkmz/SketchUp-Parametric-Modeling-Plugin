@@ -444,11 +444,15 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     z-index: 1000;
-    display: table;
+    display: flex;
+    /* Changed from table to flex for better layout control */
     flex-direction: column;
     max-height: 80vh;
-    color: white;
-    font-family: Arial, sans-serif;
+    min-height: 200px;
+    resize: none;
+    /* Disable CSS resize */
+    overflow: hidden;
+    /* Ensure content stays within bounds */
 }
 
 .navigator-header {
@@ -504,7 +508,8 @@ body {
     margin: 0;
     overflow-y: auto;
     flex-grow: 1;
-    max-height: 300px;
+    /* Fill available space */
+    /* max-height removed to allow expansion */
     display: block;
 }
 
@@ -536,4 +541,23 @@ body {
     height: 30px;
     cursor: pointer;
     margin-left: 10px;
+}
+
+.navigator-resizer {
+    height: 10px;
+    background: #333;
+    cursor: ns-resize;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid #444;
+}
+
+.navigator-resizer::after {
+    content: '';
+    width: 30px;
+    height: 4px;
+    border-top: 1px solid #666;
+    border-bottom: 1px solid #666;
 }
