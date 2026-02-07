@@ -1728,27 +1728,7 @@ class CommentReteComponent extends Rete.Component {
 
 }
 
-class GroupReteComponent extends Rete.Component {
 
-    constructor() {
-        super('Group')
-    }
-
-    builder(node) {
-
-        node.data.width = node.data.width || 400
-        node.data.height = node.data.height || 300
-
-        return node
-            .addControl(new TextReteControl(this.editor, 'name', t('Name')))
-            .addControl(new NumberReteControl(this.editor, 'width', t('Width')))
-            .addControl(new NumberReteControl(this.editor, 'height', t('Height')))
-
-    }
-
-    worker(_node, _inputs, _outputs) { }
-
-}
 
 
 class HistoryManager {
@@ -1916,7 +1896,7 @@ PMG.NodesEditor.initializeComponents = () => {
         "Concatenate": new ConcatenateReteComponent(),
         "Select": new SelectReteComponent(),
         "Make group": new MakeGroupReteComponent(),
-        "Group": new GroupReteComponent(),
+
         "Comment": new CommentReteComponent()
 
     }
@@ -2441,69 +2421,6 @@ PMG.NodesEditor.addEventListeners = () => {
             nodeTitleElement.appendChild(nodeTitleIconElement)
         }
 
-        if (node.name === 'Group') {
-            nodeElement.classList.add('group')
-
-            const updateSize = () => {
-                nodeElement.style.width = node.data.width + 'px'
-                nodeElement.style.height = node.data.height + 'px'
-                // Also update content height if needed, but node height should suffice
-            }
-            // Initial size
-            updateSize()
-
-            // Listen to inputs
-            nodeElement.querySelectorAll('input').forEach(input => {
-                input.addEventListener('input', () => {
-                    node.data.width = parseInt(node.data.width) || 400
-                    node.data.height = parseInt(node.data.height) || 300
-                    updateSize()
-                })
-            })
-
-            // Override translate for group moving logic
-            setTimeout(() => {
-                const nodeView = PMG.NodesEditor.editor.view.nodes.get(node)
-                if (nodeView && !nodeView._originalTranslate) {
-                    nodeView._originalTranslate = nodeView.translate
-                    nodeView.translate = function (x, y) {
-                        const dx = x - node.position[0]
-                        const dy = y - node.position[1]
-
-                        // Check valid move
-                        if (node.data.locked) return
-
-                        nodeView._originalTranslate.call(nodeView, x, y)
-
-                        if (dx === 0 && dy === 0) return
-
-                        // Move children
-                        const groupRect = {
-                            x: x, y: y,
-                            w: node.data.width, h: node.data.height
-                        }
-
-                        PMG.NodesEditor.editor.nodes.forEach(otherNode => {
-                            if (otherNode.id === node.id) return
-                            // Check if otherNode is inside group
-                            // We use center of node or top-left? Rete uses top-left.
-                            // Let's us center for better UX? Or simple containment.
-                            // For now simple containment of Top-Left corner.
-                            if (otherNode.position[0] >= groupRect.x &&
-                                otherNode.position[0] <= groupRect.x + groupRect.w &&
-                                otherNode.position[1] >= groupRect.y &&
-                                otherNode.position[1] <= groupRect.y + groupRect.h) {
-
-                                const otherView = PMG.NodesEditor.editor.view.nodes.get(otherNode)
-                                if (otherView) {
-                                    otherView.translate(otherNode.position[0] + dx, otherNode.position[1] + dy)
-                                }
-                            }
-                        })
-                    }
-                }
-            }, 10)
-        }
 
     })
 
@@ -2611,10 +2528,7 @@ PMG.NodesEditor.setGlobalContextMenu = () => {
             name: t('Add a comment node'),
             fn: () => { PMG.NodesEditor.addNode('Comment') }
         },
-        {
-            name: t('Add a group node'),
-            fn: () => { PMG.NodesEditor.addNode('Group') }
-        },
+
         {
             name: t('Remove all nodes'),
             fn: () => { PMG.NodesEditor.editor.clear() }
