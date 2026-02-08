@@ -545,10 +545,95 @@ body {
 }
 
 .navigator-close:hover {
-    color: #b71c1c;
-    /* Darker red on hover */
+    color: #cc0000;
     background: rgba(0, 0, 0, 0.05);
     border-radius: 3px;
+}
+
+/* Shortcut Modal Styles */
+.shortcut-modal {
+    min-width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.shortcut-list {
+    overflow-y: auto;
+    max-height: 60vh;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.shortcut-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.shortcut-item:last-child {
+    border-bottom: none;
+}
+
+.shortcut-item:hover {
+    background-color: #f5f5f5;
+}
+
+.shortcut-node-name {
+    font-weight: 500;
+}
+
+.shortcut-key {
+    background: #e0e0e0;
+    /* Slightly darker background to stand out from white row */
+    border: 1px solid #999;
+    /* Darker border */
+    color: #333;
+    /* Dark text for contrast */
+    font-weight: bold;
+    /* Bold text */
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-family: monospace;
+    font-size: 12px;
+    cursor: pointer;
+    min-width: 60px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.shortcut-key:hover {
+    background: #e0e0e0;
+    border-color: #bbb;
+}
+
+.shortcut-key.recording {
+    background: #ffebee;
+    border-color: #ef5350;
+    color: #c62828;
+    animation: pulse 1.5s infinite;
+}
+
+.shortcut-key.empty {
+    color: #999;
+    font-style: italic;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 83, 80, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(239, 83, 80, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 83, 80, 0);
+    }
 }
 
 .navigator-search {

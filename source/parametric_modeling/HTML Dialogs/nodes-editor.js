@@ -9,7 +9,7 @@
 // Translates.
 t = string => {
 
-    if (PMGNodesEditorTranslation.hasOwnProperty(string)) {
+    if (typeof PMGNodesEditorTranslation !== 'undefined' && PMGNodesEditorTranslation.hasOwnProperty(string)) {
         return PMGNodesEditorTranslation[string]
     } else {
         return string
@@ -17,7 +17,7 @@ t = string => {
 
 }
 
-PMG = {}
+var PMG = PMG || {};
 
 PMG.NodesEditor = {}
 
@@ -2003,11 +2003,16 @@ PMG.NodesEditor.addNode = (nodeName, nodeData) => {
     nodeData = (nodeData === undefined) ? {} : nodeData
 
     var component = PMG.NodesEditor.components[nodeName]
-    var mouse = PMG.NodesEditor.editor.view.area.mouse
+    var view = PMG.NodesEditor.editor.view
+    var mouse = view.area.mouse
+
+    // Fallback if mouse is not valid (e.g. keyboard shortcut)
+    var x = (mouse.x === 0 && mouse.y === 0) ? (view.container.clientWidth / 2 - view.area.transform.x) / view.area.transform.k : mouse.x
+    var y = (mouse.y === 0 && mouse.y === 0) ? (view.container.clientHeight / 2 - view.area.transform.y) / view.area.transform.k : mouse.y
 
     component.createNode(nodeData).then(node => {
 
-        node.position = [mouse.x, mouse.y]
+        node.position = [x, y]
         PMG.NodesEditor.editor.addNode(node)
 
         PMG.NodesEditor.nodeBeingAdded = node
@@ -2633,6 +2638,8 @@ document.addEventListener('DOMContentLoaded', _event => {
     PMG.NodesEditor.resizeEditorView()
     PMG.NodesEditor.initializeHistory()
     PMG.NodesEditor.Navigator.init()
+    console.log("Initializing Shortcuts...")
+    PMG.NodesEditor.Shortcuts.init()
 
 })
 
@@ -3077,11 +3084,278 @@ PMG.NodesEditor.Navigator = {
         area.zoom(k, 0, 0, 'wheel')
 
         // We set transform directly for precise positioning
-        area.transform.x = tx
-        area.transform.y = ty
-        area.update()
+        view.area.transform.x = tx
+        view.area.transform.y = ty
+        view.update()
 
         this.highlightSelected()
+    }
+}
+
+PMG.NodesEditor.Shortcuts = {
+    mapping: {}, // "CTRL+B": "Draw box"
+
+    defaults: {
+        "CTRL+B": "Draw box",
+        "CTRL+H": "Calculate",
+        "CTRL+1": "Number",
+        "CTRL++": "Add",
+        "CTRL+-": "Subtract",
+        "CTRL+*": "Multiply",
+        "CTRL+/": "Divide"
+    },
+
+    init: function () {
+        this.load()
+        this.createIcon()
+
+        // Add global listener
+        window.addEventListener('keydown', (e) => this.handleKeyDown(e))
+    },
+
+    load: function () {
+        var stored = localStorage.getItem('pmg_node_shortcuts')
+        if (stored) {
+            try {
+                this.mapping = JSON.parse(stored)
+            } catch (e) {
+                console.error("Failed to parse shortcuts", e)
+                this.mapping = { ...this.defaults }
+            }
+        } else {
+            this.mapping = { ...this.defaults }
+        }
+    },
+
+    save: function () {
+        localStorage.setItem('pmg_node_shortcuts', JSON.stringify(this.mapping))
+    },
+
+    getShortcut: function (nodeName) {
+        return Object.keys(this.mapping).find(key => this.mapping[key] === nodeName)
+    },
+
+    setShortcut: function (nodeName, keyCombo) {
+        // Remove existing shortcut for this node
+        var existingKey = this.getShortcut(nodeName)
+        if (existingKey) delete this.mapping[existingKey]
+
+        // 1. Conflict Management: Remove from old owner if exists
+        if (this.mapping[keyCombo]) {
+            console.log("Removing shortcut " + keyCombo + " from " + this.mapping[keyCombo])
+            delete this.mapping[keyCombo] // Just delete it, effectively reassigning
+        }
+
+        if (keyCombo) {
+            this.mapping[keyCombo] = nodeName
+        }
+
+        this.save()
+    },
+
+    handleKeyDown: function (e) {
+        // Ignore if typing in an input
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+
+        var combo = this.getEventCombo(e)
+        if (!combo) return
+
+        var nodeName = this.mapping[combo]
+        if (nodeName) {
+
+            // 2. Navigator Toggle
+            if (nodeName === 'Toggle Navigator') {
+                e.preventDefault()
+                e.stopPropagation()
+                PMG.NodesEditor.Navigator.toggle()
+                return
+            }
+
+            // Check if component exists
+            if (PMG.NodesEditor.components[nodeName]) {
+                e.preventDefault()
+                e.stopPropagation()
+                try {
+                    PMG.NodesEditor.addNode(nodeName)
+                } catch (err) {
+                    console.error("Error adding node via shortcut:", err)
+                }
+            } else {
+                console.warn("Shortcut mapped to unknown component:", nodeName)
+            }
+        }
+    },
+
+    getEventCombo: function (e) {
+        if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return null
+
+        var parts = []
+        if (e.ctrlKey) parts.push('CTRL')
+        if (e.altKey) parts.push('ALT')
+        if (e.shiftKey) parts.push('SHIFT')
+        if (e.metaKey) parts.push('META')
+
+        var key = e.key.toUpperCase()
+        if (key === ' ') key = 'SPACE'
+
+        // Normalize math keys
+        if (key === '+') key = '+'
+        if (key === '-') key = '-'
+        if (key === '*') key = '*'
+        if (key === '/') key = '/'
+
+        parts.push(key)
+        return parts.join('+')
+    },
+
+    createIcon: function () {
+        var toolbar = document.querySelector('.toolbar')
+        if (!toolbar) return
+
+        var group = document.createElement('div')
+        group.className = 'toolbar-group'
+
+        var icon = document.createElement('div')
+        icon.className = 'group-header'
+        icon.innerHTML = '⌨️'
+        icon.title = t('Keyboard Shortcuts')
+
+        icon.style.width = '30px'
+        icon.style.padding = '0'
+        icon.style.fontSize = '16px'
+        icon.style.cursor = 'pointer'
+
+        icon.onclick = () => this.openModal()
+
+        group.appendChild(icon)
+        toolbar.appendChild(group)
+    },
+
+    openModal: function () {
+        var overlay = document.createElement('div')
+        overlay.className = 'picker-overlay'
+
+        var modal = document.createElement('div')
+        modal.className = 'picker-modal shortcut-modal'
+
+        modal.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="margin:0;">${t('Keyboard Shortcuts')}</h3>
+                <button class="reset-btn" style="padding:2px 8px; font-size:11px; cursor:pointer;">${t('Reset Defaults')}</button>
+            </div>
+            <div class="shortcut-list"></div>
+            <button class="picker-close" style="margin-top:10px">${t('Close')}</button>
+        `
+
+        // Reset Button Logic
+        modal.querySelector('.reset-btn').onclick = () => {
+            if (confirm(t('Reset all shortcuts to defaults?'))) {
+                this.mapping = { ...this.defaults }
+                this.save()
+                document.body.removeChild(overlay)
+                this.openModal() // Re-open to refresh
+            }
+        }
+
+        var list = modal.querySelector('.shortcut-list')
+
+        // Sort components by name and add "Toggle Navigator"
+        var nodeNames = Object.keys(PMG.NodesEditor.components).sort()
+        nodeNames.unshift('Toggle Navigator') // Add special action at top
+
+        nodeNames.forEach(nodeName => {
+            var item = document.createElement('div')
+            item.className = 'shortcut-item'
+
+            var nameSpan = document.createElement('span')
+            nameSpan.className = 'shortcut-node-name'
+            nameSpan.textContent = t(nodeName)
+
+            var keyBtn = document.createElement('div')
+            keyBtn.className = 'shortcut-key'
+            var currentKey = this.getShortcut(nodeName)
+            keyBtn.textContent = currentKey || t('None')
+            if (!currentKey) keyBtn.classList.add('empty')
+
+            keyBtn.onclick = () => {
+                // Start recording
+                if (keyBtn.classList.contains('recording')) return // Already recording
+
+                // Clear others
+                modal.querySelectorAll('.recording').forEach(el => {
+                    el.classList.remove('recording')
+                    el.textContent = el.dataset.prev || t('None')
+                })
+
+                keyBtn.dataset.prev = keyBtn.textContent
+                keyBtn.textContent = t('Press keys...')
+                keyBtn.classList.add('recording')
+                keyBtn.classList.remove('empty')
+
+                // Capture next keydown
+                var recorder = (e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+
+                    // 3. Remove Shortcut on Escape
+                    if (e.key === 'Escape') {
+                        stopRecording()
+                        this.setShortcut(nodeName, null) // Clear shortcut
+                        keyBtn.textContent = t('None')
+                        keyBtn.classList.add('empty')
+                        return
+                    }
+
+                    var combo = this.getEventCombo(e)
+                    if (combo) {
+                        stopRecording()
+
+                        // Check if this key is already taken by another node (visual feedback)
+                        var oldOwner = this.mapping[combo]
+                        if (oldOwner && oldOwner !== nodeName) {
+                            // Find the element for the old owner and update it to "None"
+                            var oldOwnerEl = Array.from(list.querySelectorAll('.shortcut-item')).find(el => el.querySelector('.shortcut-node-name').textContent === t(oldOwner))
+                            if (oldOwnerEl) {
+                                var oldKeyBtn = oldOwnerEl.querySelector('.shortcut-key')
+                                oldKeyBtn.textContent = t('None')
+                                oldKeyBtn.classList.add('empty')
+                            }
+                        }
+
+                        this.setShortcut(nodeName, combo)
+                        keyBtn.textContent = combo
+                        keyBtn.classList.remove('empty')
+                    }
+                }
+
+                var stopRecording = () => {
+                    document.removeEventListener('keydown', recorder, true) // Capture phase
+                    document.removeEventListener('mousedown', stopClick)
+                    keyBtn.classList.remove('recording')
+                }
+
+                var stopClick = (e) => {
+                    if (e.target !== keyBtn) {
+                        stopRecording()
+                        // Revert if clicked outside without key
+                        keyBtn.textContent = keyBtn.dataset.prev
+                        if (keyBtn.textContent === t('None') || keyBtn.textContent === 'None') keyBtn.classList.add('empty')
+                    }
+                }
+
+                document.addEventListener('keydown', recorder, true)
+                document.addEventListener('mousedown', stopClick)
+            }
+
+            item.appendChild(nameSpan)
+            item.appendChild(keyBtn)
+            list.appendChild(item)
+        })
+
+        modal.querySelector('.picker-close').onclick = () => document.body.removeChild(overlay)
+
+        overlay.appendChild(modal)
+        document.body.appendChild(overlay)
     }
 }
 // End of Navigator object
