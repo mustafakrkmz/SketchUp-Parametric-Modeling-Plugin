@@ -2764,6 +2764,10 @@ PMG.NodesEditor.Navigator = {
 
     close: function () {
         this.panel.style.display = 'none'
+        // Blur input to return focus to body/window so shortcuts work again
+        if (this.panel.querySelector('input')) {
+            this.panel.querySelector('input').blur()
+        }
         this.isOpen = false
     },
 
@@ -3154,22 +3158,22 @@ PMG.NodesEditor.Shortcuts = {
     },
 
     handleKeyDown: function (e) {
-        // Ignore if typing in an input
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
-
         var combo = this.getEventCombo(e)
         if (!combo) return
 
         var nodeName = this.mapping[combo]
         if (nodeName) {
 
-            // 2. Navigator Toggle
+            // 1. Always allow "Toggle Navigator" (even if in input)
             if (nodeName === 'Toggle Navigator') {
                 e.preventDefault()
                 e.stopPropagation()
                 PMG.NodesEditor.Navigator.toggle()
                 return
             }
+
+            // 2. For other nodes, ignore if typing in an input
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
 
             // Check if component exists
             if (PMG.NodesEditor.components[nodeName]) {
