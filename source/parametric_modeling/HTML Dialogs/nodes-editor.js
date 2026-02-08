@@ -952,59 +952,72 @@ class CalculateReteComponent extends Rete.Component {
 
     builder(node) {
 
-        var inputA = new Rete.Input('a', t('Variable A'), PMG.NodesEditor.sockets.number)
-        inputA.addControl(new NumberReteControl(this.editor, 'a', t('Variable A')))
+        // Helper to create input with control
+        this.createInput = (key) => {
+            var label = t('Variable ' + key.toUpperCase())
+            var input = new Rete.Input(key, label, PMG.NodesEditor.sockets.number)
+            input.addControl(new NumberReteControl(this.editor, key, label))
+            return input
+        }
 
-        var inputB = new Rete.Input('b', t('Variable B'), PMG.NodesEditor.sockets.number)
-        inputB.addControl(new NumberReteControl(this.editor, 'b', t('Variable B')))
+        // Helper to update visible inputs based on connections
+        this.updateInputs = (node) => {
+            var keys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l']
+            var highestIndex = -1
 
-        var inputC = new Rete.Input('c', t('Variable C'), PMG.NodesEditor.sockets.number)
-        inputC.addControl(new NumberReteControl(this.editor, 'c', t('Variable C')))
+            // Find the highest index that has a connection
+            keys.forEach((key, idx) => {
+                if (node.inputs.has(key) && node.inputs.get(key).connections.length > 0) {
+                    highestIndex = idx
+                }
+            })
 
-        var inputD = new Rete.Input('d', t('Variable D'), PMG.NodesEditor.sockets.number)
-        inputD.addControl(new NumberReteControl(this.editor, 'd', t('Variable D')))
+            // Determine target max index (highest connected + 1), min 1 (for 'b')
+            var targetMaxIndex = highestIndex + 1
+            if (targetMaxIndex < 1) targetMaxIndex = 1
+            if (targetMaxIndex >= keys.length) targetMaxIndex = keys.length - 1
 
-        var inputE = new Rete.Input('e', t('Variable E'), PMG.NodesEditor.sockets.number)
-        inputE.addControl(new NumberReteControl(this.editor, 'e', t('Variable E')))
+            // Sync inputs
+            keys.forEach((key, idx) => {
+                var hasInput = node.inputs.has(key)
+                var shouldHaveInput = idx <= targetMaxIndex
 
-        var inputF = new Rete.Input('f', t('Variable F'), PMG.NodesEditor.sockets.number)
-        inputF.addControl(new NumberReteControl(this.editor, 'f', t('Variable F')))
+                if (hasInput && !shouldHaveInput) {
+                    node.removeInput(node.inputs.get(key))
+                } else if (!hasInput && shouldHaveInput) {
+                    node.addInput(this.createInput(key))
+                }
+            })
 
-        var inputG = new Rete.Input('g', t('Variable G'), PMG.NodesEditor.sockets.number)
-        inputG.addControl(new NumberReteControl(this.editor, 'g', t('Variable G')))
+            node.update()
+        }
 
-        var inputH = new Rete.Input('h', t('Variable H'), PMG.NodesEditor.sockets.number)
-        inputH.addControl(new NumberReteControl(this.editor, 'h', t('Variable H')))
+        // Initialize event listeners once
+        if (!this.listenersInitialized && this.editor) {
+            this.editor.on('connectioncreated connectionremoved', (connection) => {
+                if (connection.input.node.name === 'Calculate') {
+                    this.updateInputs(connection.input.node)
+                }
+            })
+            this.listenersInitialized = true
+        }
 
-        var inputI = new Rete.Input('i', t('Variable I'), PMG.NodesEditor.sockets.number)
-        inputI.addControl(new NumberReteControl(this.editor, 'i', t('Variable I')))
+        node.addControl(new TextReteControl(this.editor, 'formula', t('Formula example:') + ' round(a) * b'))
 
-        var inputJ = new Rete.Input('j', t('Variable J'), PMG.NodesEditor.sockets.number)
-        inputJ.addControl(new NumberReteControl(this.editor, 'j', t('Variable J')))
+        // Initially add ALL inputs to ensure data loading works correctly
+        var keys = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l']
+        keys.forEach(key => {
+            node.addInput(this.createInput(key))
+        })
 
-        var inputK = new Rete.Input('k', t('Variable K'), PMG.NodesEditor.sockets.number)
-        inputK.addControl(new NumberReteControl(this.editor, 'k', t('Variable K')))
+        // Prune unused inputs after initialization (and data loading)
+        setTimeout(() => {
+            this.updateInputs(node)
+        }, 10)
 
-        var inputL = new Rete.Input('l', t('Variable L'), PMG.NodesEditor.sockets.number)
-        inputL.addControl(new NumberReteControl(this.editor, 'l', t('Variable L')))
-
+        // Ensure output is added last
         var outputNumber = new Rete.Output('number', t('Number'), PMG.NodesEditor.sockets.number)
-
-        return node
-            .addControl(new TextReteControl(this.editor, 'formula', t('Formula example:') + ' round(a) * b'))
-            .addInput(inputA)
-            .addInput(inputB)
-            .addInput(inputC)
-            .addInput(inputD)
-            .addInput(inputE)
-            .addInput(inputF)
-            .addInput(inputG)
-            .addInput(inputH)
-            .addInput(inputI)
-            .addInput(inputJ)
-            .addInput(inputK)
-            .addInput(inputL)
-            .addOutput(outputNumber)
+        return node.addOutput(outputNumber)
 
     }
 
