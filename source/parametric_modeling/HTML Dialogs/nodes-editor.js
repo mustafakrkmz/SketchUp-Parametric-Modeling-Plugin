@@ -2493,13 +2493,13 @@ PMG.NodesEditor.addEventListeners = () => {
 
     // Delete selected nodes with Delete or Backspace key
     window.addEventListener('keydown', async (e) => {
-        if (e.key === 'Delete' || e.key === 'Backspace') {
-            // Check if user is typing in an input field
-            const tag = document.activeElement.tagName.toUpperCase();
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-                return;
-            }
+        // Check if user is typing in an input field
+        const tag = document.activeElement.tagName.toUpperCase();
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+            return;
+        }
 
+        if (e.key === 'Delete' || e.key === 'Backspace') {
             const selectedNodes = PMG.NodesEditor.editor.selected.list;
             if (selectedNodes.length > 0) {
                 // Determine if we should prevent default behavior (e.g. Backspace navigation)
@@ -2529,6 +2529,17 @@ PMG.NodesEditor.addEventListeners = () => {
                     }
                     PMG.NodesEditor.editor.trigger('process');
                 }, 50);
+            }
+        } else if (e.key === 'F2') {
+            const selectedNodes = PMG.NodesEditor.editor.selected.list;
+            if (selectedNodes.length === 1) {
+                const node = selectedNodes[0];
+                var newName = prompt(t('Rename node'), node.data.customName || t(node.name));
+                if (newName !== null) {
+                    node.data.customName = newName;
+                    PMG.NodesEditor.editor.trigger('nodecreated', node);
+                    PMG.NodesEditor.exportModelSchema(true);
+                }
             }
         }
     });
@@ -2629,16 +2640,26 @@ PMG.NodesEditor.Navigator = {
     isOpen: false,
     panel: null,
 
+    // Category Mapping
+    nodeCategories: {
+        'Draw box': 'Draw', 'Draw prism': 'Draw', 'Draw cylinder': 'Draw', 'Draw tube': 'Draw',
+        'Draw pyramid': 'Draw', 'Draw cone': 'Draw', 'Draw sphere': 'Draw',
+        'Number': 'Math', 'Add': 'Math', 'Subtract': 'Math', 'Multiply': 'Math', 'Divide': 'Math', 'Calculate': 'Math',
+        'Point': 'Geo', 'Get points': 'Geo', 'Vector': 'Geo',
+        'Intersect solids': 'Solid', 'Unite solids': 'Solid', 'Subtract solids': 'Solid',
+        'Push/Pull': 'Edit', 'Move': 'Edit', 'Align': 'Edit', 'Rotate': 'Edit', 'Scale': 'Edit',
+        'Paint': 'Edit', 'Tag': 'Edit', 'Erase': 'Edit',
+        'Copy': 'Tools', 'Concatenate': 'Tools', 'Select': 'Tools', 'Make group': 'Tools',
+        'Comment': 'Other'
+    },
+
     init: function () {
         this.createIcon()
         this.createPanel()
 
-        // Add minimal styling for the div icon if not in CSS
-        // The CSS change I made used a class .search-icon but I need to make sure I create it with that class.
-
         // Listen to events to update list
         PMG.NodesEditor.editor.on('nodecreated noderemoved', () => {
-            if (this.isOpen) this.updateList()
+            if (this.isOpen) setTimeout(() => this.updateList(), 50)
         })
 
         // 'process' event is triggered on rename, so it's good hook
@@ -2660,6 +2681,7 @@ PMG.NodesEditor.Navigator = {
         group.className = 'toolbar-group'
 
         var icon = document.createElement('div')
+        group.className = 'toolbar-group'
         icon.className = 'group-header'
         icon.innerHTML = '🔍'
         icon.title = t('Navigator')
@@ -2690,7 +2712,7 @@ PMG.NodesEditor.Navigator = {
             <div class="navigator-search">
                 <input type="text" placeholder="${t('Search nodes...')}">
             </div>
-            <ul class="navigator-list"></ul>
+            <div class="navigator-content"></div>
             <div class="navigator-resizer"></div>
         `
 
@@ -2738,104 +2760,173 @@ PMG.NodesEditor.Navigator = {
         this.isOpen = false
     },
 
+    getCategory: function (nodeName) {
+        return this.nodeCategories[nodeName] || 'Other';
+    },
+
+    // State for expanded categories
+    expandedCategories: {},
+
+    // ... (init function remains same) ...
+
     updateList: function () {
         if (!this.panel) return
-        var list = this.panel.querySelector('.navigator-list')
-        list.innerHTML = ''
+        var contentDiv = this.panel.querySelector('.navigator-content')
+        contentDiv.innerHTML = ''
         var filter = this.panel.querySelector('input').value.toLowerCase()
 
         var nodes = PMG.NodesEditor.editor.nodes
 
         if (nodes.length === 0) {
-            list.innerHTML = `<li style="padding:10px; color:#aaa; text-align:center">${t('No nodes found')}</li>`
+            contentDiv.innerHTML = `<div style="padding:10px; color:#aaa; text-align:center">${t('No nodes found')}</div>`
             return
         }
 
-        // Sort nodes by sortIndex then name
+        // Group nodes by category
+        var groups = {
+            'Draw': [], 'Math': [], 'Geo': [], 'Solid': [], 'Edit': [], 'Tools': [], 'Other': []
+        }
+
+        // Sort nodes by sortIndex first to ensure they are put into groups in order
         var sortedNodes = [...nodes].sort((a, b) => {
             if (typeof a.data.sortIndex !== 'undefined' && typeof b.data.sortIndex !== 'undefined') {
                 return a.data.sortIndex - b.data.sortIndex
             }
             if (typeof a.data.sortIndex !== 'undefined') return -1
             if (typeof b.data.sortIndex !== 'undefined') return 1
-
-            var nameA = a.data.customName || t(a.name)
-            var nameB = b.data.customName || t(b.name)
-            return nameA.localeCompare(nameB)
+            return 0 // Keep original order if no sortIndex
         })
 
         var foundAny = false
         sortedNodes.forEach(node => {
-            var name = node.data.customName || t(node.name)
+            var name = node.data.customName || t(node.name) || node.name || 'Node'
             if (name.toLowerCase().includes(filter)) {
                 foundAny = true
-                var li = document.createElement('li')
-                li.className = 'navigator-item'
-                li.dataset.nodeId = node.id
-
-                // Drag and Drop attributes
-                li.draggable = true
-
-                // Event Listeners for DnD
-                li.addEventListener('dragstart', (e) => this.handleDragStart(e, node))
-                li.addEventListener('dragover', (e) => this.handleDragOver(e))
-                li.addEventListener('drop', (e) => this.handleDrop(e, node))
-                li.addEventListener('dragenter', (e) => this.handleDragEnter(e))
-                li.addEventListener('dragleave', (e) => this.handleDragLeave(e))
-
-                // -- Icon --
-                var iconSpan = document.createElement('span')
-                iconSpan.className = 'navigator-icon'
-
-                if (node.data.customIcon) {
-                    iconSpan.textContent = node.data.customIcon
-                } else if (typeof PMGNodesEditorIcons !== 'undefined' && PMGNodesEditorIcons['nodes'][node.name]) {
-                    var img = document.createElement('img')
-                    img.src = PMGNodesEditorIcons['nodes'][node.name]['path']
-                    iconSpan.appendChild(img)
-                }
-                li.appendChild(iconSpan)
-
-                // -- Name --
-                var nameSpan = document.createElement('span')
-                nameSpan.textContent = name
-                nameSpan.style.overflow = 'hidden'
-                nameSpan.style.textOverflow = 'ellipsis'
-                nameSpan.style.whiteSpace = 'nowrap'
-                nameSpan.style.pointerEvents = 'none'
-                li.appendChild(nameSpan)
-
-                // -- Lock --
-                if (node.data.locked) {
-                    var lockSpan = document.createElement('span')
-                    lockSpan.className = 'navigator-lock'
-                    lockSpan.textContent = '🔒'
-                    li.appendChild(lockSpan)
-                }
-
-                // Set color indicator
-                var color = node.data.customColor
-                if (!color && typeof PMGNodesEditorIcons !== 'undefined' && PMGNodesEditorIcons['nodes'][node.name]) {
-                    color = PMGNodesEditorIcons['nodes'][node.name]['color']
-                }
-
-                if (color) {
-                    li.style.borderLeftColor = color
-                }
-
-                // Selection state
-                if (PMG.NodesEditor.editor.selected.contains(node)) {
-                    li.classList.add('selected')
-                }
-
-                li.onclick = () => this.focusNode(node)
-                list.appendChild(li)
+                var cat = this.getCategory(node.name)
+                if (!groups[cat]) groups[cat] = [] // For 'Other' or uncategorized
+                groups[cat].push(node)
             }
         })
 
         if (!foundAny) {
-            list.innerHTML = `<li style="padding:10px; color:#aaa; text-align:center">${t('No nodes found')}</li>`
+            contentDiv.innerHTML = `<div style="padding:10px; color:#aaa; text-align:center">${t('No nodes found')}</div>`
+            return
         }
+
+        // Render groups
+        Object.keys(groups).forEach(catName => {
+            if (groups[catName].length === 0) return
+
+            var details = document.createElement('details')
+            details.className = 'navigator-category'
+
+            // Restore state (default to open if not set)
+            if (this.expandedCategories[catName] === undefined) {
+                this.expandedCategories[catName] = true
+            }
+            details.open = this.expandedCategories[catName]
+
+            // If filtering, always open
+            if (filter.length > 0) details.open = true
+
+            // Listen for toggle to save state
+            details.ontoggle = (e) => {
+                if (filter.length === 0) { // Only save state if not filtering
+                    this.expandedCategories[catName] = details.open
+                }
+            }
+
+            var summary = document.createElement('summary')
+            summary.textContent = t(catName)
+            details.appendChild(summary)
+
+            var ul = document.createElement('ul')
+            ul.className = 'navigator-list'
+            ul.dataset.category = catName // Mark the list with its category
+
+            groups[catName].forEach(node => {
+                var li = this.createNodeItem(node)
+                ul.appendChild(li)
+            })
+
+            details.appendChild(ul)
+            contentDiv.appendChild(details)
+
+            // Check if any node in this group is selected
+            var hasSelected = groups[catName].some(n => PMG.NodesEditor.editor.selected.contains(n))
+            if (hasSelected) {
+                // Do NOT force open, but mark it
+                summary.classList.add('has-selected-node')
+            } else {
+                summary.classList.remove('has-selected-node')
+            }
+        })
+    },
+
+    createNodeItem: function (node) {
+        var li = document.createElement('li')
+        li.className = 'navigator-item'
+        li.dataset.nodeId = node.id
+
+        // Drag and Drop attributes
+        li.draggable = true
+
+        // Event Listeners for DnD
+        li.addEventListener('dragstart', (e) => this.handleDragStart(e, node))
+        li.addEventListener('dragover', (e) => this.handleDragOver(e))
+        li.addEventListener('drop', (e) => this.handleDrop(e, node))
+        li.addEventListener('dragenter', (e) => this.handleDragEnter(e))
+        li.addEventListener('dragleave', (e) => this.handleDragLeave(e))
+
+        // -- Icon --
+        var iconSpan = document.createElement('span')
+        iconSpan.className = 'navigator-icon'
+
+        if (node.data.customIcon) {
+            iconSpan.textContent = node.data.customIcon
+        } else if (typeof PMGNodesEditorIcons !== 'undefined' && PMGNodesEditorIcons['nodes'][node.name]) {
+            var img = document.createElement('img')
+            img.src = PMGNodesEditorIcons['nodes'][node.name]['path']
+            iconSpan.appendChild(img)
+        }
+        li.appendChild(iconSpan)
+
+        // -- Name --
+        var nameSpan = document.createElement('span')
+        var name = node.data.customName || t(node.name) || node.name || 'Node'
+        nameSpan.textContent = name
+        nameSpan.style.overflow = 'hidden'
+        nameSpan.style.textOverflow = 'ellipsis'
+        nameSpan.style.whiteSpace = 'nowrap'
+        nameSpan.style.pointerEvents = 'none'
+        li.appendChild(nameSpan)
+
+        // -- Lock --
+        if (node.data.locked) {
+            var lockSpan = document.createElement('span')
+            lockSpan.className = 'navigator-lock'
+            lockSpan.textContent = '🔒'
+            li.appendChild(lockSpan)
+        }
+
+        // Set color indicator
+        var color = node.data.customColor
+        if (!color && typeof PMGNodesEditorIcons !== 'undefined' && PMGNodesEditorIcons['nodes'][node.name]) {
+            color = PMGNodesEditorIcons['nodes'][node.name]['color']
+        }
+
+        if (color) {
+            li.style.borderLeftColor = color
+        }
+
+        // Selection state
+        if (PMG.NodesEditor.editor.selected.contains(node)) {
+            li.classList.add('selected')
+        }
+
+        li.onclick = () => this.focusNode(node)
+
+        return li
     },
 
     // --- Drag and Drop Handlers ---
@@ -2843,6 +2934,7 @@ PMG.NodesEditor.Navigator = {
     handleDragStart: function (e, node) {
         e.dataTransfer.effectAllowed = 'move'
         e.dataTransfer.setData('text/plain', node.id)
+        e.dataTransfer.setData('category', this.getCategory(node.name)) // Store category
         e.target.classList.add('dragging')
     },
 
@@ -2868,13 +2960,22 @@ PMG.NodesEditor.Navigator = {
         }
 
         // Remove visual cues
-        var list = this.panel.querySelector('.navigator-list')
-        list.querySelectorAll('.navigator-item').forEach(el => {
+        var contentDiv = this.panel.querySelector('.navigator-content')
+        contentDiv.querySelectorAll('.navigator-item').forEach(el => {
             el.classList.remove('drag-over')
             el.classList.remove('dragging')
         })
 
         var draggedNodeId = e.dataTransfer.getData('text/plain')
+        var draggedCategory = e.dataTransfer.getData('category')
+        var targetCategory = this.getCategory(targetNode.name)
+
+        // Constraint: Must be same category
+        if (draggedCategory !== targetCategory) {
+            console.warn("Cannot drag node to different category")
+            return false
+        }
+
         if (draggedNodeId == targetNode.id) {
             return false
         }
@@ -2890,10 +2991,7 @@ PMG.NodesEditor.Navigator = {
             }
             if (typeof a.data.sortIndex !== 'undefined') return -1
             if (typeof b.data.sortIndex !== 'undefined') return 1
-
-            var nameA = a.data.customName || t(a.name)
-            var nameB = b.data.customName || t(b.name)
-            return nameA.localeCompare(nameB)
+            return 0
         })
 
         var draggedIndex = sortedNodes.indexOf(draggedNode)
@@ -2906,7 +3004,9 @@ PMG.NodesEditor.Navigator = {
         targetIndex = sortedNodes.indexOf(targetNode) // Re-calculate after removal
         sortedNodes.splice(targetIndex, 0, draggedNode)
 
-        // Re-assign sortIndex to ALL nodes
+        // Re-assign sortIndex to ALL nodes to match the new global order
+        // Note: Even though we only visually swapped in one category, we are updating the global list order.
+        // This preserves relative order in other categories too.
         sortedNodes.forEach((node, index) => {
             node.data.sortIndex = index
         })
@@ -2922,13 +3022,25 @@ PMG.NodesEditor.Navigator = {
 
     highlightSelected: function () {
         if (!this.panel) return
-        var list = this.panel.querySelector('.navigator-list')
-        list.querySelectorAll('.navigator-item').forEach(li => {
+        var contentDiv = this.panel.querySelector('.navigator-content')
+
+        // Update item selection state
+        contentDiv.querySelectorAll('.navigator-item').forEach(li => {
             li.classList.remove('selected')
             var nodeId = parseInt(li.dataset.nodeId)
             var node = PMG.NodesEditor.editor.nodes.find(n => n.id === nodeId)
             if (node && PMG.NodesEditor.editor.selected.contains(node)) {
                 li.classList.add('selected')
+            }
+        })
+
+        // Update category header highlight
+        contentDiv.querySelectorAll('.navigator-category').forEach(details => {
+            var summary = details.querySelector('summary')
+            if (details.querySelector('.navigator-item.selected')) {
+                summary.classList.add('has-selected-node')
+            } else {
+                summary.classList.remove('has-selected-node')
             }
         })
     },
@@ -2962,7 +3074,7 @@ PMG.NodesEditor.Navigator = {
         var tx = cx - (node.position[0] + width / 2) * k
         var ty = cy - (node.position[1] + height / 2) * k
 
-        area.zoom(k, 0, 0, 'wheel') // This might be needed to trigger internal updates or just update transform directly
+        area.zoom(k, 0, 0, 'wheel')
 
         // We set transform directly for precise positioning
         area.transform.x = tx

@@ -501,129 +501,163 @@ body {
     background: rgba(240, 255, 240, 0.95);
     /* Honeydew with slight transparency */
     border: 1px solid #999;
-    /* Darker border for visibility */
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    height: 400px;
+    background: #f0fff0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     display: flex;
-    /* Changed from table to flex for better layout control */
     flex-direction: column;
-    max-height: 80vh;
-    min-height: 200px;
-    resize: none;
-    /* Disable CSS resize */
-    overflow: hidden;
-    /* Ensure content stays within bounds */
-    color: #333;
-    /* Dark text for light background */
     font-family: Arial, sans-serif;
+    min-height: 150px;
+    max-height: 90vh;
+    /* Prevent it from going off screen vertically */
 }
 
 .navigator-header {
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px 8px 0 0;
+    background: #e0e0e0;
+    padding: 8px 10px;
+    border-bottom: 1px solid #ccc;
+    border-radius: 5px 5px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #444;
+    cursor: move;
+    /* We can implement panel dragging later if needed, current cursor implies it */
 }
 
 .navigator-title {
     font-weight: bold;
-    font-size: 14px;
+    color: #333;
 }
 
 .navigator-close {
     background: none;
     border: none;
-    color: #aeaeae;
+    font-size: 20px;
+    font-weight: bold;
     cursor: pointer;
-    font-size: 16px;
+    color: #d32f2f;
+    /* Red color for visibility */
     padding: 0 5px;
+    line-height: 1;
 }
 
 .navigator-close:hover {
-    color: white;
+    color: #b71c1c;
+    /* Darker red on hover */
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
 }
 
 .navigator-search {
-    padding: 10px;
-    border-bottom: 1px solid #444;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
 }
 
 .navigator-search input {
     width: 100%;
-    padding: 6px;
-    background: #444;
-    border: 1px solid #555;
-    border-radius: 4px;
-    color: white;
-    outline: none;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    box-sizing: border-box;
+    /* Ensure padding doesn't affect width */
 }
 
-.navigator-search input:focus {
-    border-color: #777;
+.navigator-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 5px 0;
+}
+
+.navigator-resizer {
+    height: 10px;
+    background: transparent;
+    cursor: ns-resize;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+}
+
+/* Category Groups */
+.navigator-category {
+    border-bottom: 1px solid #eee;
+}
+
+.navigator-category summary {
+    padding: 8px 10px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #444;
+    background: #f9f9f9;
+    user-select: none;
+    list-style: none;
+    /* Hide default triangle in some browsers */
+}
+
+.navigator-category summary:hover {
+    background: #ececec;
+}
+
+/* Custom triangle for summary */
+.navigator-category summary::-webkit-details-marker {
+    display: none;
+}
+
+.navigator-category summary::before {
+    content: '▶';
+    display: inline-block;
+    font-size: 10px;
+    width: 15px;
+    transition: transform 0.2s;
+}
+
+.navigator-category summary.has-selected-node {
+    color: #2e7d32;
+    /* Greenish text */
+    font-weight: 900;
+    /* Extra bold */
+    background: #e8f5e9;
+    /* Light green background */
+    border-left: 4px solid #4caf50;
+}
+
+.navigator-category[open] summary::before {
+    transform: rotate(90deg);
 }
 
 .navigator-list {
     list-style: none;
     padding: 0;
     margin: 0;
-    overflow-y: auto;
-    flex-grow: 1;
-    /* Fill available space */
-    /* max-height removed to allow expansion */
-    display: block;
 }
 
 .navigator-item {
-    padding: 8px 10px;
+    padding: 6px 10px 6px 25px;
+    /* Indent items */
     cursor: pointer;
-    border-bottom: 1px solid #ddd;
-    /* Lighter separator */
-    border-left: 5px solid transparent;
-    /* default, will be colored by JS */
-    transition: background 0.2s, border-left-color 0.3s;
+    border-bottom: 1px solid #f5f5f5;
     display: flex;
     align-items: center;
-    color: #333;
+    border-left: 4px solid transparent;
+    transition: background 0.1s;
+    min-height: 32px;
+    /* Ensure visibility even if empty */
 }
 
 .navigator-item:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: #e6f7e6;
 }
 
 .navigator-item.selected {
-    background: rgba(0, 0, 0, 0.1);
+    background: #d0f0d0;
+    border-left-color: rgb(130, 191, 64) !important;
     font-weight: bold;
-}
-
-#pmg-nodes-editor .toolbar .search-icon {
-    display: inline-block;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    margin-left: 10px;
-}
-
-.navigator-resizer {
-    height: 10px;
-    background: #333;
-    cursor: ns-resize;
-    border-radius: 0 0 8px 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-top: 1px solid #444;
-}
-
-.navigator-resizer::after {
-    content: '';
-    width: 30px;
-    height: 4px;
-    border-top: 1px solid #999;
-    border-bottom: 1px solid #999;
+    color: #333;
+    /* Ensure text is visible */
 }
 
 .navigator-icon {
